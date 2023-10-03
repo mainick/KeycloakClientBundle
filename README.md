@@ -87,45 +87,50 @@ class IamService
 }
 ```
 
-### Authenticate the user
+Perform the desired operations, such as retrieving additional user claims, assigned roles, associated groups, etc.
+
 
 ```php
-...
+// authenticate the user
+$accessToken = $this->iamClient->authenticate($username, $password);
 
-    public function authenticate(string $username, string $password): never
-    {
-        $accessToken = $this->iamClient->authenticate($username, $password);
+// verify the token
+$accessToken = $this->iamClient->verifyToken($accessToken);
 
-        // Do something with the access token
-    }
+// refresh the token
+$accessToken = $this->iamClient->refreshToken($accessToken);
 
-...
-```
+// get user info
+$userInfo = $this->iamClient->userInfo($accessToken);
+echo $userInfo->id; // id
+echo $userInfo->username; // username
+echo $userInfo->email; // email
+echo $userInfo->firstName; // first name
+echo $userInfo->lastName; // last name
+echo $userInfo->name; // full name
+echo $userInfo->groups; // all groups assigned to the user
+echo $userInfo->realmRoles; // realm roles assigned to the user
+echo $userInfo->clientRoles; // client roles assigned to the user
+echo $userInfo->applicationRoles; // specific client roles assigned to the user
+echo $userInfo->attributes; // additional user attributes
 
-### Refreshing a Token
+// has role
+$hasRole = $this->iamClient->hasRole($accessToken, $roleName);
 
-```php
-...
+// has any role
+$hasAnyRole = $this->iamClient->hasAnyRole($accessToken, $roleNames);
 
-    public function refreshToken(AccessTokenInterface $token): ?AccessTokenInterface
-    {
-        return $this->iamClient->refreshToken($token);
-    }
+// has all roles
+$hasAllRoles = $this->iamClient->hasAllRoles($accessToken, $roleNames);
 
-...
-```
+// has group
+$hasGroup = $this->iamClient->hasGroup($accessToken, $groupName);
 
-### User info
+// has any group
+$hasAnyGroup = $this->iamClient->hasAnyGroup($accessToken, $groupNames);
 
-```php
-...
-
-    public function userInfo(AccessTokenInterface $token): ?UserRepresentationDTO
-    {
-        return $this->iamClient->userInfo($token);
-    }
-
-...
+// has all groups
+$hasAllGroups = $this->iamClient->hasAllGroups($accessToken, $groupNames);
 ```
 
 ### Token Verification Listener
