@@ -1,6 +1,6 @@
 {
   "name": "mainick/keycloak-client-bundle",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "type": "symfony-bundle",
   "description": "Keycloak client bundle for Symfony",
   "license": "MIT",
