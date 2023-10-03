@@ -1,0 +1,22 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Mainick\KeycloakClientBundle\Interface\IamClientInterface:
+        alias: Mainick\KeycloakClientBundle\Provider\KeycloakClient
+
+    Mainick\KeycloakClientBundle\Provider\KeycloakClient:
+        bind:
+            bool $verify_ssl: '%mainick_keycloak_client.keycloak.verify_ssl%'
+            string $base_url: '%mainick_keycloak_client.keycloak.base_url%'
+            string $realm: '%mainick_keycloak_client.keycloak.realm%'
+            string $client_id: '%mainick_keycloak_client.keycloak.client_id%'
+            string $client_secret: '%mainick_keycloak_client.keycloak.client_secret%'
+            string $redirect_uri: '%mainick_keycloak_client.keycloak.redirect_uri%'
+            string $encryption_algorithm: '%mainick_keycloak_client.keycloak.encryption_algorithm%'
+            string $encryption_key: '%mainick_keycloak_client.keycloak.encryption_key%'
+            string $encryption_key_path: '%mainick_keycloak_client.keycloak.encryption_key_path%'
+            string $version: '%mainick_keycloak_client.keycloak.version%'

@@ -1,0 +1,38 @@
+{
+  "name": "mainick/keycloak-client-bundle",
+  "version": "0.9.0",
+  "type": "symfony-bundle",
+  "description": "Keycloak client bundle for Symfony",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "stevenmaguire/oauth2-keycloak": "^5.0"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.22",
+    "phpunit/phpunit": "^10.2",
+    "mockery/mockery": "~1.5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mainick\\KeycloakClientBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mainick\\KeycloakClientBundle\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "php-cs-fixer fix",
+    "lint-apply": "php-cs-fixer fix --dry-run --diff --ansi --verbose --allow-risky=no",
+    "test": "phpunit --testdox --colors=always"
+  },
+  "authors": [
+    {
+      "name": "Maico Orazio",
+      "email": "maico.orazio@gmail.com",
+      "homepage": "https://github.com/mainick"
+    }
+  ]
+}
