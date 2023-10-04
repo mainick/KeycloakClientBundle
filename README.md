@@ -94,8 +94,19 @@ Perform the desired operations, such as retrieving additional user claims, assig
 // authenticate the user
 $accessToken = $this->iamClient->authenticate($username, $password);
 
-// verify the token
-$accessToken = $this->iamClient->verifyToken($accessToken);
+// verify and introspect the token
+$userRepresentation = $this->iamClient->verifyToken($accessToken);
+echo $userRepresentation->id; // id
+echo $userRepresentation->username; // username
+echo $userRepresentation->email; // email
+echo $userRepresentation->firstName; // first name
+echo $userRepresentation->lastName; // last name
+echo $userRepresentation->name; // full name
+echo $userRepresentation->groups; // all groups assigned to the user
+echo $userRepresentation->realmRoles; // realm roles assigned to the user
+echo $userRepresentation->clientRoles; // client roles assigned to the user
+echo $userRepresentation->applicationRoles; // specific client roles assigned to the user
+echo $userRepresentation->attributes; // additional user attributes
 
 // refresh the token
 $accessToken = $this->iamClient->refreshToken($accessToken);
