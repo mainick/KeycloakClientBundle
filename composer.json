@@ -1,9 +1,13 @@
 {
   "name": "mainick/keycloak-client-bundle",
-  "version": "1.0.2",
   "type": "symfony-bundle",
-  "description": "Keycloak client bundle for Symfony",
+  "description": "Keycloak client bundle for Symfony, designed to simplify Keycloak integration into your application and provide additional functionality for token management and user information access",
   "license": "MIT",
+  "keywords": [
+    "keycloak-client",
+    "jwt-token",
+    "oauth2-keycloak"
+  ],
   "require": {
     "php": ">=8.2",
     "stevenmaguire/oauth2-keycloak": "^5.0"
