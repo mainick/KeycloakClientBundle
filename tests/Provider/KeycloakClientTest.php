@@ -163,7 +163,7 @@ EOF;
 
         // then
         $this->assertEquals($this->access_token, $token->getToken());
-        $this->assertEquals(time()+3600, $token->getExpires());
+        $this->assertEquals(time() + 3600, $token->getExpires());
         $this->assertEquals('mock_refresh_token', $token->getRefreshToken());
         $this->assertIsArray($token->getValues());
     }
@@ -243,7 +243,7 @@ EOF;
 
         // then
         $this->assertEquals($this->access_token, $token->getToken());
-        $this->assertEquals(time()+3600, $token->getExpires());
+        $this->assertEquals(time() + 3600, $token->getExpires());
         $this->assertEquals('mock_refresh_token', $token->getRefreshToken());
         $this->assertIsArray($token->getValues());
         $this->assertArrayHasKey('scope', $token->getValues());

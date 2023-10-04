@@ -1,4 +1,10 @@
 
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
 /vendor/
 
 ###> friendsofphp/php-cs-fixer ###

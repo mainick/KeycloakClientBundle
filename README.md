@@ -5,9 +5,9 @@ KeycloakClientBundle
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Total Downloads](https://img.shields.io/packagist/dt/mainick/keycloak-client-bundle.svg?style=flat-square)](https://packagist.org/packages/mainick/keycloak-client-bundle)
 
-The `KeycloakClientBundle` bundle is a wrapper for the `stevenmaguire/oauth2-keycloak` package, 
-designed to simplify Keycloak integration into your application in Symfony and provide additional functionality 
-for token management and user information access. 
+The `KeycloakClientBundle` bundle is a wrapper for the `stevenmaguire/oauth2-keycloak` package,
+designed to simplify Keycloak integration into your application in Symfony and provide additional functionality
+for token management and user information access.
 It also includes a listener to verify the token on every request.
 
 ## Installation
@@ -155,8 +155,8 @@ $hasAllScopes = $this->iamClient->hasAllScopes($accessToken, $scopeNames);
 
 ### Token Verification Listener
 
-The KeycloakClientBundle includes a built-in listener that verifies the token on every request, 
-ensuring the security and validity of your Keycloak integration. 
+The KeycloakClientBundle includes a built-in listener that verifies the token on every request,
+ensuring the security and validity of your Keycloak integration.
 This listener seamlessly handles token validation, allowing you to focus on your application's logic.
 
 To use it, you need to add the following configuration to your `config/services.yaml` file:
@@ -181,7 +181,7 @@ composer update
 Then run the test suite:
 
 ```bash
-composer test:unit
+composer test
 ```
 
 ## Author
