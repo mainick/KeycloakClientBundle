@@ -142,6 +142,15 @@ $hasAnyGroup = $this->iamClient->hasAnyGroup($accessToken, $groupNames);
 
 // has all groups
 $hasAllGroups = $this->iamClient->hasAllGroups($accessToken, $groupNames);
+
+// has scope
+$hasScope = $this->iamClient->hasScope($accessToken, $scopeName);
+
+// has any scope
+$hasAnyScope = $this->iamClient->hasAnyScope($accessToken, $scopeNames);
+
+// has all scopes
+$hasAllScopes = $this->iamClient->hasAllScopes($accessToken, $scopeNames);
 ```
 
 ### Token Verification Listener
