@@ -139,7 +139,6 @@ class KeycloakClient implements IamClientInterface
             $this->keycloakClientLogger->info('KeycloakClient::userInfo', [
                 'user' => $user->toArray(),
             ]);
-            var_dump($user->toArray());
 
             return UserRepresentationDTO::fromArray($user->toArray());
         }
