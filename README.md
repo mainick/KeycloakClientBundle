@@ -10,6 +10,50 @@ designed to simplify Keycloak integration into your application in Symfony and p
 for token management and user information access.
 It also includes a listener to verify the token on every request.
 
+## Configuration
+
+Before installing this package, you need to configure it manually.
+You can do this by creating a `mainick_keycloak_client.yaml` file in the `config/packages` directory of your project
+and adding the following configuration:
+
+```yaml
+# config/packages/mainick_keycloak_client.yaml
+
+mainick_keycloak_client:
+  keycloak:
+    verify_ssl: '%env(bool:IAM_VERIFY_SSL)%'
+    base_url: '%env(IAM_BASE_URL)%'
+    realm: '%env(IAM_REALM)%'
+    client_id: '%env(IAM_CLIENT_ID)%'
+    client_secret: '%env(IAM_CLIENT_SECRET)%'
+    redirect_uri: '%env(IAM_REDIRECT_URI)%'
+    encryption_algorithm: '%env(IAM_ENCRYPTION_ALGORITHM)%'
+    encryption_key: '%env(IAM_ENCRYPTION_KEY)%'
+    encryption_key_path: '%env(IAM_ENCRYPTION_KEY_PATH)%'
+    version: '%env(IAM_VERSION)%'
+```
+
+Additionally, it's recommended to add the following environment variables to your project's environment file
+(e.g., `.env` or `.env.local`) with the appropriate values for your configuration:
+
+```shell
+###> mainick/keycloak-client-bundle ###
+IAM_VERIFY_SSL=true # Verify SSL certificate
+IAM_BASE_URL='<your-base-server-url>'  # Keycloak server URL
+IAM_REALM='<your-realm>' # Keycloak realm name
+IAM_CLIENT_ID='<your-client-id>' # Keycloak client id
+IAM_CLIENT_SECRET='<your-client-secret>' # Keycloak client secret
+IAM_REDIRECT_URI='<your-redirect-uri>' # Keycloak redirect uri
+IAM_ENCRYPTION_ALGORITHM='<your-algorithm>' # RS256, HS256, etc.
+IAM_ENCRYPTION_KEY='<your-public-key>' # public key
+IAM_ENCRYPTION_KEY_PATH='<your-public-key-path>' # public key path
+IAM_VERSION='<your-version-keycloak>' # Keycloak version
+###< mainick/keycloak-client-bundle ###
+```
+
+Make sure to replace the placeholder values with your actual configuration values.
+Once you have configured the package and environment variables, you can proceed with the installation.
+
 ## Installation
 
 You can install this package using [Composer](http://getcomposer.org/):
@@ -30,26 +74,7 @@ return [
 ];
 ```
 
-## Configuration
-
-The bundle provides a default configuration for the Keycloak client.
-You can override it by adding the following configuration to
-your `config/packages/mainick_keycloak_client.yaml` file:
-
-```yaml
-mainick_keycloak_client:
-  keycloak:
-    verify_ssl: <your-ssl-required>
-    base_url: <your-base-server-url> # Keycloak server URL
-    realm: <your-realm> # Keycloak realm name
-    client_id: <your-client-id> # Keycloak client id
-    client_secret: <your-client-secret> # Keycloak client secret
-    redirect_uri: <your-redirect-uri>
-    encryption_algorithm: <your-algorithm>
-    encryption_key: <your-public-key>
-    encryption_key_path: <your-public-key-path>
-    version: <your-version-keycloak>
-```
+Configurando il pacchetto prima dell'installazione, ti assicuri che sarà pronto per l'uso una volta installato.
 
 ## Usage
 
