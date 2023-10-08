@@ -29,8 +29,8 @@
     }
   },
   "scripts": {
-    "lint": "php-cs-fixer fix",
-    "lint-apply": "php-cs-fixer fix --dry-run --diff --ansi --verbose --allow-risky=no",
+    "lint": "php-cs-fixer fix --dry-run --diff --ansi --verbose --allow-risky=no",
+    "lint-fix": "php-cs-fixer fix",
     "test": "phpunit --testdox --colors=always"
   },
   "authors": [

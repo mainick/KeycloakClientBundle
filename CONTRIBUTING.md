@@ -8,6 +8,8 @@ We accept contributions via Pull Requests on [Github](https://github.com/mainick
 
 ## Pull Requests
 
+- **[PSR-12: Extended Coding Style](https://www.php-fig.org/psr/psr-12/)** - The easiest way to apply the conventions is to install [PHP Coding Standards Fixer](https://cs.symfony.com/).
+
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
 - **Document any change in behaviour** - Make sure the README and any other relevant documentation are kept up-to-date.
@@ -22,11 +24,26 @@ We accept contributions via Pull Requests on [Github](https://github.com/mainick
 
 - **Ensure tests pass!** - Please run the tests (see below) before submitting your pull request, and make sure they pass. We won't accept a patch until all tests pass.
 
+- **Ensure no coding standards violations** - Please run PHP Coding Standards Fixer using the PSR-12 standard (see below) before submitting your pull request. A violation will cause the build to fail, so please make sure there are no violations. We can't accept a patch if the build fails.
 
 ## Running Tests
 
 ``` bash
 composer test
+```
+
+## Running PHP Coding Standards Fixer dry-run
+
+The rules usaged the PHP Coding Standards Fixer are defined in the `.php-cs-fixer.dist.php` file.
+
+``` bash
+composer lint
+```
+
+## Running PHP Coding Standards Fixer
+
+``` bash
+composer lint-fix
 ```
 
 **Happy coding**!
