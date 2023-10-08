@@ -36,6 +36,4 @@ jobs:
     - name: Install Dependencies
       run: composer update
     - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
       run: vendor/bin/phpunit
