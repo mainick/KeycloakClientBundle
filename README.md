@@ -180,11 +180,14 @@ $hasAllScopes = $this->iamClient->hasAllScopes($accessToken, $scopeNames);
 
 ### Token Verification Listener
 
-The KeycloakClientBundle includes a built-in listener that verifies the token on every request,
-ensuring the security and validity of your Keycloak integration.
+The KeycloakClientBundle includes a built-in listener, `TokenAuthListener`, that automatically validates the
+JWT token on every request, ensuring the security and validity of your Keycloak integration.
 This listener seamlessly handles token validation, allowing you to focus on your application's logic.
 
-To use it, you need to add the following configuration to your `config/services.yaml` file:
+#### Using TokenAuthListener
+
+In your Symfony project, add the `TokenAuthListener` to your `config/services.yaml` file as a registered service
+and tag it as a `kernel.event_listener`. This will enable the listener to trigger on every request.
 
 ```yaml
 services:
@@ -192,6 +195,36 @@ services:
         tags:
           - { name: kernel.event_listener, event: kernel.request, method: checkValidToken, priority: 0 }
 ```
+
+#### Excluding Routes from Token Validation
+
+`TokenAuthListener` verifies the token for all incoming requests by default. However,
+if you have specific routes for which you want to exclude token validation,
+you can do so using the `ExcludeTokenValidationAttribute` attribute.
+
+To exclude token validation for a particular route, apply the `ExcludeTokenValidationAttribute` to the
+corresponding controller method.
+
+```php
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use App\Attribute\ExcludeTokenValidationAttribute;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+class MyController extends AbstractController
+{
+    #[Route("/path/to/excluded/route", name: "app.excluded_route", methods: ["GET"])]
+    #[ExcludeTokenValidationAttribute]
+    public function excludedRouteAction(): Response
+    {
+        // This route is excluded from token validation.
+        // ...
+    }
+}
+```
+
+When the `ExcludeTokenValidationAttribute` is applied to a method, `TokenAuthListener` will skip token validation
+for requests to that specific route.
 
 ## Running the Tests
 
