@@ -223,6 +223,8 @@ The MIT License (MIT). Please see [License File](LICENSE) for more information.
 We welcome your contributions! If you wish to enhance this package or have found a bug,
 feel free to create a pull request or report an issue in the [issue tracker](https://github.com/mainick/KeycloakClientBundle/issues).
 
+Please see [CONTRIBUTING](https://github.com/mainick/KeycloakClientBundle/blob/main/CONTRIBUTING.md) for details.
+
 <!-- ## Contributing -->
 <!-- Please see [Contributing](CONTRIBUTING.md) for details. -->
 
