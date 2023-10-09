@@ -6,15 +6,27 @@ namespace Mainick\KeycloakClientBundle\Tests\EventSubscriber;
 
 use Firebase\JWT\JWT;
 use League\OAuth2\Client\Tool\QueryBuilderTrait;
+use Mainick\KeycloakClientBundle\Annotation\ExcludeTokenValidationAttribute;
 use Mainick\KeycloakClientBundle\EventSubscriber\TokenAuthListener;
+use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
 use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+
+class MyController
+{
+    #[ExcludeTokenValidationAttribute]
+    public function excludedRouteAction(): Response
+    {
+        return new Response('Excluded route', Response::HTTP_OK, ['Content-Type' => 'text/plain']);
+    }
+}
 
 class TokenAuthListenerTest extends TestCase
 {
@@ -163,5 +175,36 @@ EOF;
         // then
         $user = $request->attributes->get('user');
         $this->assertEquals('test-user', $user->username);
+    }
+
+    public function testCheckValidTokenExcludesRouteWithAttribute(): void
+    {
+        // given
+        $logger = $this->createMock(LoggerInterface::class);
+        $iamClient = $this->createMock(IamClientInterface::class);
+        $tokenAuthListener = new TokenAuthListener($logger, $iamClient);
+
+        // when
+        // Create a mock controller method with ExcludeTokenValidationAttribute
+        $controllerMethodWithAttribute = 'Mainick\KeycloakClientBundle\Tests\EventSubscriber\MyController::excludedRouteAction';
+
+        // Mock the request for a route with ExcludeTokenValidationAttribute
+        $request = new Request();
+        $request->attributes->set('_controller', $controllerMethodWithAttribute);
+        $request->headers->set('X-Auth-Token', $this->access_token);
+
+        // Mock the Event
+        $eventRequest = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        // call checkValidToken
+        $tokenAuthListener->checkValidToken($eventRequest);
+
+        // then
+        // Verify that the token validation was skipped for the route with ExcludeTokenValidationAttribute
+        $this->assertNull($eventRequest->getResponse());
     }
 }
