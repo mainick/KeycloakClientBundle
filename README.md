@@ -196,6 +196,8 @@ services:
           - { name: kernel.event_listener, event: kernel.request, method: checkValidToken, priority: 0 }
 ```
 
+#### Retrieve user information
+
 Additionally, the `TokenAuthListener` adds an `user` attribute to the Symfony request object,
 which contains the `UserRepresentationDTO` object.
 
