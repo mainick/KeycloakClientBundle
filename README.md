@@ -196,6 +196,18 @@ services:
           - { name: kernel.event_listener, event: kernel.request, method: checkValidToken, priority: 0 }
 ```
 
+Additionally, the `TokenAuthListener` adds an `user` attribute to the Symfony request object,
+which contains the `UserRepresentationDTO` object.
+
+```php
+// get the user object from the request
+$user = $request->attributes->get('user');
+```
+
+This `user` attribute contains the user information fetched from the JWT token and is an instance
+of the `UserRepresentationDTO` class.
+This allows your application to easily access user-related data when processing requests.
+
 #### Excluding Routes from Token Validation
 
 `TokenAuthListener` verifies the token for all incoming requests by default. However,
