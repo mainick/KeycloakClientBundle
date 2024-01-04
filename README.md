@@ -222,7 +222,7 @@ corresponding controller method.
 ```php
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Attribute\ExcludeTokenValidationAttribute;
+use Mainick\KeycloakClientBundle\Annotation\ExcludeTokenValidationAttribute;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class MyController extends AbstractController
