@@ -16,7 +16,8 @@
     "friendsofphp/php-cs-fixer": "^3.22",
     "phpunit/phpunit": "^10.2",
     "mockery/mockery": "~1.5.0",
-    "symfony/http-kernel": "^5.3"
+    "symfony/http-kernel": "^5.3",
+    "nyholm/symfony-bundle-test": "^2.0"
   },
   "autoload": {
     "psr-4": {
