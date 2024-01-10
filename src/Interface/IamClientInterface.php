@@ -17,6 +17,11 @@ interface IamClientInterface
     /**
      * @param array<string,string> $options
      */
+    public function getAuthorizationUrl(array $options = []): string;
+
+    /**
+     * @param array<string,string> $options
+     */
     public function logoutUrl(array $options = []): string;
 
     /**
@@ -25,6 +30,10 @@ interface IamClientInterface
     public function authorize(array $options, callable $redirectHandler = null): never;
 
     public function authenticate(string $username, string $password): ?AccessTokenInterface;
+
+    public function getState(): string;
+
+    public function authenticateByCode(string $code): ?AccessTokenInterface;
 
     /**
      * @param array<string> $roles

@@ -151,6 +151,19 @@ class KeycloakClient implements IamClientInterface
         }
     }
 
+    public function getState(): string
+    {
+        return $this->keycloakProvider->getState();
+    }
+
+    /**
+     * @param array<string,string> $options
+     */
+    public function getAuthorizationUrl(array $options = []): string
+    {
+        return $this->keycloakProvider->getAuthorizationUrl($options);
+    }
+
     /**
      * @param array<string,string> $options
      */
@@ -198,6 +211,35 @@ class KeycloakClient implements IamClientInterface
         }
         catch (\Exception $e) {
             $this->keycloakClientLogger->error('KeycloakClient::authenticate', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    public function authenticateByCode(string $code): ?AccessTokenInterface
+    {
+        try {
+            $token = $this->keycloakProvider->getAccessToken('authorization_code', [
+                'code' => $code,
+            ]);
+            $accessToken = new AccessToken();
+            $accessToken->setToken($token->getToken())
+                ->setExpires($token->getExpires())
+                ->setRefreshToken($token->getRefreshToken())
+                ->setValues($token->getValues());
+
+            $this->keycloakClientLogger->info('KeycloakClient::authenticateByCode', [
+                'token' => $accessToken->getToken(),
+                'expires' => $accessToken->getExpires(),
+                'refresh_token' => $accessToken->getRefreshToken(),
+            ]);
+
+            return $accessToken;
+        }
+        catch (\Exception $e) {
+            $this->keycloakClientLogger->error('KeycloakClient::authenticateByCode', [
                 'error' => $e->getMessage(),
             ]);
 
