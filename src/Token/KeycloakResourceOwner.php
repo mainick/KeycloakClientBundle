@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Token;
 
 use Mainick\KeycloakClientBundle\Interface\ResourceOwnerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-class KeycloakResourceOwner implements ResourceOwnerInterface
+class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 {
     /**
      * Raw response.
@@ -143,5 +144,14 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
     public function toArray(): array
     {
         return $this->response;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->getUsername();
     }
 }
