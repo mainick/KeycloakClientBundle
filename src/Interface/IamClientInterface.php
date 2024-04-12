@@ -27,7 +27,7 @@ interface IamClientInterface
     /**
      * @param array<string,string> $options
      */
-    public function authorize(array $options, callable $redirectHandler = null): never;
+    public function authorize(array $options, ?callable $redirectHandler = null): never;
 
     public function authenticate(string $username, string $password): ?AccessTokenInterface;
 
