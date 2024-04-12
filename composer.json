@@ -10,11 +10,11 @@
   ],
   "require": {
     "php": ">=8.2",
-    "stevenmaguire/oauth2-keycloak": "^5.0"
+    "stevenmaguire/oauth2-keycloak": "^5.1"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.22",
-    "phpunit/phpunit": "^10.2",
+    "friendsofphp/php-cs-fixer": "^3.52",
+    "phpunit/phpunit": "^11.1",
     "mockery/mockery": "~1.5.0",
     "symfony/http-kernel": "^5.3"
   },
