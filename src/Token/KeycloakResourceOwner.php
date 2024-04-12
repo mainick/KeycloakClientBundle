@@ -84,7 +84,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
      *
      * @return array<string>|null
      */
-    private function getClientRoles(string $client = null): ?array
+    private function getClientRoles(?string $client = null): ?array
     {
         $roles = [];
 
@@ -108,7 +108,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
      *
      * @return array<string>
      */
-    public function getRoles(string $client_id = null): array
+    public function getRoles(?string $client_id = null): array
     {
         $roles = $this->getRealRoles();
 

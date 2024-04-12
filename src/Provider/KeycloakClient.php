@@ -162,7 +162,7 @@ class KeycloakClient implements IamClientInterface
     /**
      * @param array<string,string> $options
      */
-    public function authorize(array $options, callable $redirectHandler = null): never
+    public function authorize(array $options, ?callable $redirectHandler = null): never
     {
         try {
             $this->keycloakProvider->authorize($options, $redirectHandler);
@@ -181,6 +181,7 @@ class KeycloakClient implements IamClientInterface
             $token = $this->keycloakProvider->getAccessToken('password', [
                 'username' => $username,
                 'password' => $password,
+                'scope' => 'openid',
             ]);
             $accessToken = new AccessToken();
             $accessToken->setToken($token->getToken())
