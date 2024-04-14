@@ -294,10 +294,14 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAnyGroup(AccessTokenInterface $token, array $groups): bool
     {
-        $token_introspect = $this->verifyToken($token);
-        $exists = array_intersect($groups, $token_introspect['groups']);
+        $user = $this->verifyToken($token);
 
-        return count($exists) > 0;
+        $groupsList = array_map(static fn ($group) => $group->name, $user->groups ?? []);
+        if (empty($groupsList)) {
+            return false;
+        }
+
+        return count(array_intersect($groups, $groupsList)) > 0;
     }
 
     /**
@@ -305,16 +309,27 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAllGroups(AccessTokenInterface $token, array $groups): bool
     {
-        $token_introspect = $this->verifyToken($token);
-        $exists = array_intersect($groups, $token_introspect['groups']);
+        $user = $this->verifyToken($token);
+
+        $groupsList = array_map(static fn ($group) => $group->name, $user->groups ?? []);
+        if (empty($groupsList)) {
+            return false;
+        }
+
+        $exists = array_intersect($groups, $groupsList);
 
         return count($exists) === count($groups);
     }
 
     public function hasGroup(AccessTokenInterface $token, string $group): bool
     {
-        $token_introspect = $this->verifyToken($token);
+        $user = $this->verifyToken($token);
 
-        return in_array($group, $token_introspect['groups'], true);
+        $groupsList = array_map(static fn ($group) => $group->name, $user->groups ?? []);
+        if (empty($groupsList)) {
+            return false;
+        }
+
+        return in_array($group, $groupsList, true);
     }
 }

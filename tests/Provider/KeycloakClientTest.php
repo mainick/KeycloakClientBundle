@@ -63,7 +63,8 @@ EOD;
   },
   "scope": "openid email profile",
   "groups": [
-    "test-app-group-user"
+    "test-app-group-user",
+    "test-app-group-admin"
   ],
   "sid": "c90c8e0d-aabb-4c71-b8a8-e88792cacd96",
   "address": {},
@@ -339,14 +340,12 @@ EOF;
         // when
         $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
         $anyRole = $this->keycloakClient->hasAnyRole($token, ['test-app-role-user', 'test-app-role-admin']);
-        $allRoles = $this->keycloakClient->hasAllRoles($token, ['test-app-role-user', 'view-profile']);
 
         // then
         $this->assertTrue($anyRole);
-        $this->assertTrue($allRoles);
     }
 
-    public function testHasAllRoleInUserSOnes(): void
+    public function testHasAllRolesInUserSOnes(): void
     {
         // given
         $getAccessTokenStream = $this->createMock(StreamInterface::class);
@@ -408,6 +407,99 @@ EOF;
         // then
         $this->assertIsArray($user->groups);
         $this->assertContains('test-app-group-user', $groups_name);
+    }
+
+    public function testHasGroupInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $hasGroup = $this->keycloakClient->hasGroup($token, 'test-app-group-user');
+
+        // then
+        $this->assertTrue($hasGroup);
+    }
+
+    public function testHasAnyGroupInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $anyGroup = $this->keycloakClient->hasAnyGroup($token, ['test-app-group-user', 'test-app-group-not-exists']);
+
+        // then
+        $this->assertTrue($anyGroup);
+    }
+
+    public function testHasAllGroupsInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $allGroups = $this->keycloakClient->hasAllGroups($token, ['test-app-group-user', 'test-app-group-admin']);
+
+        // then
+        $this->assertTrue($allGroups);
     }
 
     public function testGetScopeUser(): void
