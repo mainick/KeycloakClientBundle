@@ -24,6 +24,7 @@ final readonly class UserRepresentationDTO
         public string $email,
         public ?bool $enabled,
         public ?int $createdTimestamp,
+        public ?int $updatedAt,
         public ?array $attributes,
         public ?array $realmRoles,
         public ?array $clientRoles,
@@ -36,7 +37,7 @@ final readonly class UserRepresentationDTO
     /**
      * @param array<string,mixed> $data
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?string $client_id = null): self
     {
         $realm_roles = [];
         if (isset($data['realm_access']['roles'])) {
@@ -59,8 +60,8 @@ final readonly class UserRepresentationDTO
         }
 
         $application_roles = [];
-        if (!empty($data['azp']) && isset($data['resource_access'][$data['azp']]['roles'])) {
-            foreach ($data['resource_access'][$data['azp']]['roles'] as $role_name) {
+        if ($client_id && isset($data['resource_access'][$client_id]['roles'])) {
+            foreach ($data['resource_access'][$client_id]['roles'] as $role_name) {
                 $dummy = ['name' => $role_name];
                 $application_roles[] = RoleRepresentationDTO::fromArray($dummy);
             }
@@ -90,6 +91,7 @@ final readonly class UserRepresentationDTO
             email: $data['email'],
             enabled: $data['enabled'] ?? null,
             createdTimestamp: $data['createdTimestamp'] ?? null,
+            updatedAt: $data['updated_at'] ?? null,
             attributes: $data['attributes'] ?? null,
             realmRoles: count($realm_roles) ? $realm_roles : null,
             clientRoles: count($client_roles) ? $client_roles : null,
