@@ -113,7 +113,7 @@ class KeycloakClient implements IamClientInterface
                 'user' => $user->toArray(),
             ]);
 
-            return UserRepresentationDTO::fromArray($user->toArray());
+            return UserRepresentationDTO::fromArray($user->toArray(), $this->client_id);
         }
         catch (\Exception $e) {
             $this->keycloakClientLogger->error('KeycloakClient::verifyToken', [
@@ -140,7 +140,7 @@ class KeycloakClient implements IamClientInterface
                 'user' => $user->toArray(),
             ]);
 
-            return UserRepresentationDTO::fromArray($user->toArray());
+            return UserRepresentationDTO::fromArray($user->toArray(), $this->client_id);
         }
         catch (\Exception $e) {
             $this->keycloakClientLogger->error('KeycloakClient::userInfo', [
