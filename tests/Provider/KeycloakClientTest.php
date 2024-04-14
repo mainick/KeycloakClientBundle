@@ -87,7 +87,7 @@ EOF;
             true,
             'http://mock.url/auth',
             'mock_realm',
-            'mock_client_id',
+            'test-app',
             'mock_secret',
             'none',
         );
@@ -280,6 +280,101 @@ EOF;
         // then
         $this->assertIsArray($user->applicationRoles);
         $this->assertContains('test-app-role-user', $roles_name);
+    }
+
+    public function testHasRoleInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $hasRole = $this->keycloakClient->hasRole($token, 'test-app-role-user');
+
+        // then
+        $this->assertTrue($hasRole);
+    }
+
+    public function testHasAnyRoleInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $anyRole = $this->keycloakClient->hasAnyRole($token, ['test-app-role-user', 'test-app-role-admin']);
+        $allRoles = $this->keycloakClient->hasAllRoles($token, ['test-app-role-user', 'view-profile']);
+
+        // then
+        $this->assertTrue($anyRole);
+        $this->assertTrue($allRoles);
+    }
+
+    public function testHasAllRoleInUserSOnes(): void
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $allRoles = $this->keycloakClient->hasAllRoles($token, ['test-app-role-user', 'view-profile']);
+
+        // then
+        $this->assertTrue($allRoles);
     }
 
     public function testGetGroupsUser(): void

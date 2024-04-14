@@ -211,8 +211,18 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAnyRole(AccessTokenInterface $token, array $roles): bool
     {
-        $token_introspect = $this->verifyToken($token);
-        $exists = array_intersect($roles, $token_introspect['roles']);
+        $user = $this->verifyToken($token);
+
+        $rolesTypes = [
+            'applicationRoles' => $user->applicationRoles ?? [],
+            'clientRoles' => $user->clientRoles ?? [],
+            'realmRoles' => $user->realmRoles ?? [],
+        ];
+        $rolesAll = array_reduce($rolesTypes, static function ($carry, $rolesList) {
+            return array_merge($carry, array_map(static fn ($role) => $role->name, $rolesList));
+        }, []);
+
+        $exists = array_intersect($roles, $rolesAll);
 
         return count($exists) > 0;
     }
@@ -222,17 +232,39 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAllRoles(AccessTokenInterface $token, array $roles): bool
     {
-        $token_introspect = $this->verifyToken($token);
-        $exists = array_intersect($roles, $token_introspect['roles']);
+        $user = $this->verifyToken($token);
+
+        $rolesTypes = [
+            'applicationRoles' => $user->applicationRoles ?? [],
+            'clientRoles' => $user->clientRoles ?? [],
+            'realmRoles' => $user->realmRoles ?? [],
+        ];
+        $rolesAll = array_reduce($rolesTypes, static function ($carry, $rolesList) {
+            return array_merge($carry, array_map(static fn ($role) => $role->name, $rolesList));
+        }, []);
+
+        $exists = array_intersect($roles, $rolesAll);
 
         return count($exists) === count($roles);
     }
 
     public function hasRole(AccessTokenInterface $token, string $role): bool
     {
-        $token_introspect = $this->verifyToken($token);
+        $user = $this->verifyToken($token);
 
-        return in_array($role, $token_introspect['roles'], true);
+        $rolesTypes = [
+            'applicationRoles' => $user->applicationRoles ?? [],
+            'clientRoles' => $user->clientRoles ?? [],
+            'realmRoles' => $user->realmRoles ?? [],
+        ];
+        foreach ($rolesTypes as $rolesList) {
+            $has = in_array($role, array_map(static fn ($role) => $role->name, $rolesList), true);
+            if ($has) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
