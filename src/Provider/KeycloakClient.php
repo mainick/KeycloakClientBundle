@@ -213,18 +213,18 @@ class KeycloakClient implements IamClientInterface
     {
         $user = $this->verifyToken($token);
 
-        $rolesTypes = [
-            'applicationRoles' => $user->applicationRoles ?? [],
-            'clientRoles' => $user->clientRoles ?? [],
-            'realmRoles' => $user->realmRoles ?? [],
-        ];
-        $rolesAll = array_reduce($rolesTypes, static function ($carry, $rolesList) {
-            return array_merge($carry, array_map(static fn ($role) => $role->name, $rolesList));
-        }, []);
+        $userRoles = array_merge(
+            $user->applicationRoles ?? [],
+            $user->clientRoles ?? [],
+            $user->realmRoles ?? []
+        );
 
-        $exists = array_intersect($roles, $rolesAll);
+        $rolesList = array_map(static fn ($role) => $role->name, $userRoles);
+        if (empty($rolesList)) {
+            return false;
+        }
 
-        return count($exists) > 0;
+        return count(array_intersect($roles, $rolesList)) > 0;
     }
 
     /**
@@ -234,16 +234,18 @@ class KeycloakClient implements IamClientInterface
     {
         $user = $this->verifyToken($token);
 
-        $rolesTypes = [
-            'applicationRoles' => $user->applicationRoles ?? [],
-            'clientRoles' => $user->clientRoles ?? [],
-            'realmRoles' => $user->realmRoles ?? [],
-        ];
-        $rolesAll = array_reduce($rolesTypes, static function ($carry, $rolesList) {
-            return array_merge($carry, array_map(static fn ($role) => $role->name, $rolesList));
-        }, []);
+        $userRoles = array_merge(
+            $user->applicationRoles ?? [],
+            $user->clientRoles ?? [],
+            $user->realmRoles ?? []
+        );
 
-        $exists = array_intersect($roles, $rolesAll);
+        $rolesList = array_map(static fn ($role) => $role->name, $userRoles);
+        if (empty($rolesList)) {
+            return false;
+        }
+
+        $exists = array_intersect($roles, $rolesList);
 
         return count($exists) === count($roles);
     }
@@ -252,19 +254,18 @@ class KeycloakClient implements IamClientInterface
     {
         $user = $this->verifyToken($token);
 
-        $rolesTypes = [
-            'applicationRoles' => $user->applicationRoles ?? [],
-            'clientRoles' => $user->clientRoles ?? [],
-            'realmRoles' => $user->realmRoles ?? [],
-        ];
-        foreach ($rolesTypes as $rolesList) {
-            $has = in_array($role, array_map(static fn ($role) => $role->name, $rolesList), true);
-            if ($has) {
-                return true;
-            }
+        $userRoles = array_merge(
+            $user->applicationRoles ?? [],
+            $user->clientRoles ?? [],
+            $user->realmRoles ?? []
+        );
+
+        $rolesList = array_map(static fn ($role) => $role->name, $userRoles);
+        if (empty($rolesList)) {
+            return false;
         }
 
-        return false;
+        return in_array($role, $rolesList, true);
     }
 
     /**
