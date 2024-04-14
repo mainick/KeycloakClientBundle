@@ -273,7 +273,14 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAnyScope(AccessTokenInterface $token, array $scopes): bool
     {
-        throw new \RuntimeException('Not implemented');
+        $user = $this->verifyToken($token);
+
+        $scopesList = array_map(static fn ($scope) => $scope->name, $user->scope ?? []);
+        if (empty($scopesList)) {
+            return false;
+        }
+
+        return count(array_intersect($scopes, $scopesList)) > 0;
     }
 
     /**
@@ -281,12 +288,28 @@ class KeycloakClient implements IamClientInterface
      */
     public function hasAllScopes(AccessTokenInterface $token, array $scopes): bool
     {
-        throw new \RuntimeException('Not implemented');
+        $user = $this->verifyToken($token);
+
+        $scopesList = array_map(static fn ($scope) => $scope->name, $user->scope ?? []);
+        if (empty($scopesList)) {
+            return false;
+        }
+
+        $exists = array_intersect($scopes, $scopesList);
+
+        return count($exists) === count($scopes);
     }
 
     public function hasScope(AccessTokenInterface $token, string $scope): bool
     {
-        throw new \RuntimeException('Not implemented');
+        $user = $this->verifyToken($token);
+
+        $scopesList = array_map(static fn ($scope) => $scope->name, $user->scope ?? []);
+        if (empty($scopesList)) {
+            return false;
+        }
+
+        return in_array($scope, $scopesList, true);
     }
 
     /**
