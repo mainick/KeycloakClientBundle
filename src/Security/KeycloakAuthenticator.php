@@ -29,7 +29,7 @@ final class KeycloakAuthenticator extends AbstractAuthenticator implements Authe
     ) {
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         $request->getSession()->set(self::STATE_SESSION_KEY, $this->iamClient->getState());
 
