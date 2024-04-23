@@ -6,6 +6,8 @@ namespace Mainick\KeycloakClientBundle\Interface;
 
 interface ResourceOwnerInterface
 {
+    public function getAccessToken(): ?AccessTokenInterface;
+
     /**
      * Returns the identifier of the authorized resource owner.
      */

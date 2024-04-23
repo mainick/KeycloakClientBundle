@@ -4,8 +4,14 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
+        public: false
+
+    Mainick\KeycloakClientBundle\:
+        resource: '../../*'
+        exclude: '../../{Entity,Migrations,Tests,Token/KeycloakResourceOwner.php,EventSubscriber/TokenAuthListener.php}'
 
     Mainick\KeycloakClientBundle\Interface\IamClientInterface:
+        public: true
         alias: Mainick\KeycloakClientBundle\Provider\KeycloakClient
 
     Mainick\KeycloakClientBundle\Provider\KeycloakClient:
@@ -20,3 +26,30 @@ services:
             string $encryption_key: '%mainick_keycloak_client.keycloak.encryption_key%'
             string $encryption_key_path: '%mainick_keycloak_client.keycloak.encryption_key_path%'
             string $version: '%mainick_keycloak_client.keycloak.version%'
+
+    Mainick\KeycloakClientBundle\Controller\KeycloakController:
+        public: true
+        bind:
+            $defaultTargetRouteName: '%mainick_keycloak_client.security.default_target_route_name%'
+        tags: [ 'controller.service_arguments' ]
+
+    Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider:
+        public: true
+#        tags:
+#            - { name: mainick_keycloak_security.user_provider, alias: oauth }
+
+    Mainick\KeycloakClientBundle\EventSubscriber\ExceptionListener:
+        public: true
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
+    Mainick\KeycloakClientBundle\EventSubscriber\LogoutAuthListener:
+        public: true
+        arguments:
+            $defaultTargetRouteName: '%mainick_keycloak_client.security.default_target_route_name%'
+        tags:
+            - { name: kernel.event_listener, event: 'Symfony\Component\Security\Http\Event\LogoutEvent', priority: -10 }
+
+
+#    Mainick\KeycloakClientBundle\Security\EntryPoint\KeycloakAuthenticationEntryPoint: ~
+#    Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakAuthenticator: ~

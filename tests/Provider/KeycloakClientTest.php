@@ -274,7 +274,7 @@ EOF;
         $this->keycloakClient->setHttpClient($client);
 
         // when
-        $token = $this->keycloakClient->authenticateByCode('mock_code');
+        $token = $this->keycloakClient->authenticateCodeGrant('mock_code');
 
         // then
         $this->assertEquals($this->access_token, $token->getToken());

@@ -25,6 +25,9 @@ class MainickKeycloakClientExtension extends Extension
         foreach ($config['keycloak'] as $key => $value) {
             $container->setParameter('mainick_keycloak_client.keycloak.'.$key, $value);
         }
+        foreach ($config['security'] as $key => $value) {
+            $container->setParameter('mainick_keycloak_client.security.'.$key, $value);
+        }
         foreach ($config['admin_cli'] as $key => $value) {
             if ('enabled' === $key) {
                 continue;

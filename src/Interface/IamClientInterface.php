@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Interface;
 
 use Mainick\KeycloakClientBundle\DTO\UserRepresentationDTO;
+use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
 
 interface IamClientInterface
 {
@@ -13,6 +14,8 @@ interface IamClientInterface
     public function verifyToken(AccessTokenInterface $token): ?UserRepresentationDTO;
 
     public function userInfo(AccessTokenInterface $token): ?UserRepresentationDTO;
+
+    public function fetchUserFromToken(AccessTokenInterface $token): ?KeycloakResourceOwner;
 
     /**
      * @param array<string,string> $options
@@ -33,7 +36,7 @@ interface IamClientInterface
 
     public function getState(): string;
 
-    public function authenticateByCode(string $code): ?AccessTokenInterface;
+    public function authenticateCodeGrant(string $code): ?AccessTokenInterface;
 
     /**
      * @param array<string> $roles
