@@ -1,0 +1,11 @@
+mainick_keycloak_security_auth_connect:
+    path:       /auth/keycloak/connect
+    controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::connect
+
+mainick_keycloak_security_auth_connect_check:
+    path:       /auth/keycloak/check
+    controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::connectCheck
+
+mainick_keycloak_security_auth_logout:
+    path:       /auth/keycloak/logout
+    controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::logout

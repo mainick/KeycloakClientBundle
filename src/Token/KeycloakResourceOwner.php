@@ -4,21 +4,31 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Token;
 
+use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\ResourceOwnerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-class KeycloakResourceOwner implements ResourceOwnerInterface
+class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 {
     /**
      * Raw response.
      */
     protected array $response;
 
+    protected ?AccessTokenInterface $accessToken = null;
+
     /**
      * Creates new resource owner.
      */
-    public function __construct(array $response = [])
+    public function __construct(array $response = [], ?AccessTokenInterface $accessToken = null)
     {
         $this->response = $response;
+        $this->accessToken = $accessToken;
+    }
+
+    public function getAccessToken(): ?AccessTokenInterface
+    {
+        return $this->accessToken;
     }
 
     /**
@@ -84,7 +94,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
      *
      * @return array<string>|null
      */
-    private function getClientRoles(?string $client = null): ?array
+    private function getClientRoles(?string $client_id = null): ?array
     {
         $roles = [];
 
@@ -96,8 +106,8 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
             }
         }
 
-        if (!is_null($client) && isset($this->response['azp']) && $client === $this->response['azp']) {
-            $roles = $this->response['resource_access'][$client]['roles'] ?? [];
+        if ($client_id && isset($this->response['resource_access'][$client_id]['roles'])) {
+            $roles = $this->response['resource_access'][$client_id]['roles'] ?? [];
         }
 
         return $roles;
@@ -143,5 +153,14 @@ class KeycloakResourceOwner implements ResourceOwnerInterface
     public function toArray(): array
     {
         return $this->response;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->getUsername();
     }
 }

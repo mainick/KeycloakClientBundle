@@ -250,6 +250,40 @@ EOF;
         $this->assertArrayHasKey('scope', $token->getValues());
     }
 
+    public function testAuthenticateByCode()
+    {
+        // given
+        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream
+            ->method('__toString')
+            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+
+        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse
+            ->shouldReceive('getBody')
+            ->andReturn($getAccessTokenStream);
+        $getAccessTokenResponse
+            ->shouldReceive('getHeader')
+            ->andReturn(['content-type' => 'application/json']);
+
+        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client
+            ->shouldReceive('send')
+            ->times(1)
+            ->andReturn($getAccessTokenResponse);
+        $this->keycloakClient->setHttpClient($client);
+
+        // when
+        $token = $this->keycloakClient->authenticateCodeGrant('mock_code');
+
+        // then
+        $this->assertEquals($this->access_token, $token->getToken());
+        $this->assertEquals(time() + 3600, $token->getExpires());
+        $this->assertEquals('mock_refresh_token', $token->getRefreshToken());
+        $this->assertIsArray($token->getValues());
+        $this->assertArrayHasKey('scope', $token->getValues());
+    }
+
     public function testGetRolesUser(): void
     {
         // given

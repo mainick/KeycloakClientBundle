@@ -240,6 +240,159 @@ class MyController extends AbstractController
 When the `ExcludeTokenValidationAttribute` is applied to a method, `TokenAuthListener` will skip token validation
 for requests to that specific route.
 
+## Symfony Security Configuration
+
+To use the `KeycloakClientBundle` with Symfony's security component, you need to configure the security system to use the Keycloak client.
+
+First you need to add a new section to the bundle configuration file:
+
+```yaml
+# config/packages/mainick_keycloak_client.yaml
+security:
+  default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
+```
+
+Di seguito il file di configurazione completo:
+
+```yaml
+# config/packages/mainick_keycloak_client.yaml
+
+mainick_keycloak_client:
+  keycloak:
+    verify_ssl: '%env(bool:IAM_VERIFY_SSL)%'
+    base_url: '%env(IAM_BASE_URL)%'
+    realm: '%env(IAM_REALM)%'
+    client_id: '%env(IAM_CLIENT_ID)%'
+    client_secret: '%env(IAM_CLIENT_SECRET)%'
+    redirect_uri: '%env(IAM_REDIRECT_URI)%'
+    encryption_algorithm: '%env(IAM_ENCRYPTION_ALGORITHM)%'
+    encryption_key: '%env(IAM_ENCRYPTION_KEY)%'
+    encryption_key_path: '%env(IAM_ENCRYPTION_KEY_PATH)%'
+    version: '%env(IAM_VERSION)%'
+security:
+  default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
+```
+
+### Route configuration
+
+Create a new file in ```config/routes/``` to load pre configured bundle routes.
+
+```yaml
+# config/routes/mainick_keycloak_security.yaml
+mainick_keycloak_security_auth_connect:
+  path:       /auth/keycloak/connect
+  controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::connect
+
+mainick_keycloak_security_auth_connect_check:
+  path:       /auth/keycloak/check
+  controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::connectCheck
+
+mainick_keycloak_security_auth_logout:
+  path:       /auth/keycloak/logout
+  controller: Mainick\KeycloakClientBundle\Controller\KeycloakController::logout
+```
+
+### Security configuration
+
+Then you need to configure the security system to use the Keycloak client.
+You can do this by adding the following configuration to your `config/packages/security.yaml` file to use the bundle's UserProvider:
+
+```yaml
+# config/packages/security.yaml
+providers:
+  mainick_keycloak_user_provider:
+    id: Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider
+```
+
+Here is a simple configuration that restrict access to ```/app/*``` routes only to user with roles "ROLE_USER" or "ROLE_ADMIN" :
+
+```yaml
+# config/packages/security.yaml
+security:
+  providers:
+    mainick_keycloak_user_provider:
+      id: Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+
+    auth_connect:
+      pattern: /auth/keycloak/connect
+      security: false
+
+    secured_area:
+      pattern: ^/
+      provider: mainick_keycloak_user_provider
+      entry_point: Mainick\KeycloakClientBundle\Security\EntryPoint\KeycloakAuthenticationEntryPoint
+      custom_authenticator:
+        - Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakAuthenticator
+      logout:
+        path: mainick_keycloak_security_auth_logout
+
+  role_hierarchy:
+    ROLE_ADMIN: ROLE_USER
+
+  # Easy way to control access for large sections of your site
+  # Note: Only the *first* access control that matches will be used
+  access_control:
+    - { path: ^/app, roles: ROLE_ADMIN }
+```
+
+### Logout
+
+To logout the user, you can use the following code:
+
+```php
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use Mainick\KeycloakClientBundle\Annotation\ExcludeTokenValidationAttribute;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+class MyController extends AbstractController
+{
+    #[Route("/logout", name: "app.logout", methods: ["GET"])]
+    public function logout(): RedirectResponse
+    {
+        return $this->redirectToRoute('mainick_keycloak_security_auth_logout');
+    }
+}
+```
+
+or create a link in your twig template:
+
+```twig
+<a href="{{ path('mainick_keycloak_security_auth_logout') }}">Logout</a>
+```
+
+This will redirect the user to the Keycloak logout page, where the user will be logged out from the Keycloak server.
+
+### Redirect after login
+
+To redirect the user to a specific route after login, you can set the `TARGET_ROUTE_NAME` environment variable
+to the desired route name.
+
+```shell
+###> mainick/keycloak-client-bundle ###
+TARGET_ROUTE_NAME=app.home
+###< mainick/keycloak-client-bundle ###
+```
+
+This will redirect the user to the `app.home` route after a successful login.
+
+### Troubleshooting - You have Access Denied in your browser
+
+If you have an Access Denied error in your browser, tt is maybe because scope roles is misconfigured.
+
+For correction:
+
+1. Click on **Client scopes** on left panel, then **roles**:
+2. Click on **Mappers** tab, then **client roles**:
+3. Disabled **Add to userinfo**, click on **Save**, then enabled **Add to userinfo** and click on **Save**:
+
+Please check the roles assigned to the user in Keycloak and the roles configured in the Symfony security configuration.
+
 ## Running the Tests
 
 Install the [Composer](http://getcomposer.org/) dependencies:

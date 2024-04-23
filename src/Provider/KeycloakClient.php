@@ -108,7 +108,7 @@ class KeycloakClient implements IamClientInterface
                 'tokenDecoded' => $tokenDecoded,
             ]);
 
-            $user = new KeycloakResourceOwner($tokenDecoded);
+            $user = new KeycloakResourceOwner($tokenDecoded, $token);
             $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [
                 'user' => $user->toArray(),
             ]);
@@ -135,7 +135,7 @@ class KeycloakClient implements IamClientInterface
                 'values' => $token->getValues(),
             ]);
             $resourceOwner = $this->keycloakProvider->getResourceOwner($accessToken);
-            $user = new KeycloakResourceOwner($resourceOwner->toArray());
+            $user = new KeycloakResourceOwner($resourceOwner->toArray(), $token);
             $this->keycloakClientLogger->info('KeycloakClient::userInfo', [
                 'user' => $user->toArray(),
             ]);
@@ -149,6 +149,45 @@ class KeycloakClient implements IamClientInterface
 
             return null;
         }
+    }
+
+    public function fetchUserFromToken(AccessTokenInterface $token): ?KeycloakResourceOwner
+    {
+        try {
+            $accessToken = new AccessTokenLib([
+                'access_token' => $token->getToken(),
+                'refresh_token' => $token->getRefreshToken(),
+                'expires' => $token->getExpires(),
+                'values' => $token->getValues(),
+            ]);
+            $resourceOwner = $this->keycloakProvider->getResourceOwner($accessToken);
+            $user = new KeycloakResourceOwner($resourceOwner->toArray(), $token);
+            $this->keycloakClientLogger->info('KeycloakClient::fetchUserFromToken', [
+                'user' => $user->toArray(),
+            ]);
+
+            return $user;
+        }
+        catch (\Exception $e) {
+            $this->keycloakClientLogger->error('KeycloakClient::fetchUserFromToken', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    public function getState(): string
+    {
+        return $this->keycloakProvider->getState();
+    }
+
+    /**
+     * @param array<string,string> $options
+     */
+    public function getAuthorizationUrl(array $options = []): string
+    {
+        return $this->keycloakProvider->getAuthorizationUrl($options);
     }
 
     /**
@@ -199,6 +238,35 @@ class KeycloakClient implements IamClientInterface
         }
         catch (\Exception $e) {
             $this->keycloakClientLogger->error('KeycloakClient::authenticate', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    public function authenticateCodeGrant(string $code): ?AccessTokenInterface
+    {
+        try {
+            $token = $this->keycloakProvider->getAccessToken('authorization_code', [
+                'code' => $code,
+            ]);
+            $accessToken = new AccessToken();
+            $accessToken->setToken($token->getToken())
+                ->setExpires($token->getExpires())
+                ->setRefreshToken($token->getRefreshToken())
+                ->setValues($token->getValues());
+
+            $this->keycloakClientLogger->info('KeycloakClient::authenticateCodeGrant', [
+                'token' => $accessToken->getToken(),
+                'expires' => $accessToken->getExpires(),
+                'refresh_token' => $accessToken->getRefreshToken(),
+            ]);
+
+            return $accessToken;
+        }
+        catch (\Exception $e) {
+            $this->keycloakClientLogger->error('KeycloakClient::authenticateCodeGrant', [
                 'error' => $e->getMessage(),
             ]);
 

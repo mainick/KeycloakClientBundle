@@ -1,0 +1,4 @@
+security:
+    providers:
+        mainick_keycloak_user_provider:
+            id: Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider
