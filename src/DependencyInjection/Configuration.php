@@ -32,6 +32,8 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('security')
+                    ->info('Enable this if you want to use the Keycloak security layer. This will protect your application with Keycloak.')
+                    ->canBeEnabled()
                     ->children()
                         ->scalarNode('default_target_route_name')->defaultNull()->end()
                     ->end()
