@@ -6,8 +6,8 @@ namespace Mainick\KeycloakClientBundle\DTO;
 
 enum KeycloakAuthorizationCodeEnum: string
 {
-    const STATE_SESSION_KEY = 'mainick.oauth2state';
-    const LOGIN_REFERRER = 'mainick.loginReferrer';
-    const CODE_KEY = 'code';
-    const STATE_KEY = 'state';
+    public const STATE_SESSION_KEY = 'mainick.oauth2state';
+    public const LOGIN_REFERRER = 'mainick.loginReferrer';
+    public const CODE_KEY = 'code';
+    public const STATE_KEY = 'state';
 }

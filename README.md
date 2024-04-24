@@ -116,8 +116,11 @@ Perform the desired operations, such as retrieving additional user claims, assig
 
 
 ```php
-// authenticate the user
+// authenticate the user with username and password
 $accessToken = $this->iamClient->authenticate($username, $password);
+
+// authenticate the user with authorization code
+$accessToken = $this->iamClient->authenticateCodeGrant($authorizationCode);
 
 // verify and introspect the token
 $userRepresentation = $this->iamClient->verifyToken($accessToken);

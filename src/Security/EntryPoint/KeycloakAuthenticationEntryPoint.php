@@ -14,7 +14,6 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 
 final readonly class KeycloakAuthenticationEntryPoint implements AuthenticationEntryPointInterface
 {
-
     public function __construct(
         private UrlGeneratorInterface $urlGenerator
     ) {

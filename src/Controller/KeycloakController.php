@@ -14,7 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class KeycloakController extends AbstractController
 {
-
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
         private readonly IamClientInterface $iamClient
