@@ -242,6 +242,8 @@ for requests to that specific route.
 
 ## Symfony Security Configuration
 
+### Configuration
+
 To use the `KeycloakClientBundle` with Symfony's security component, you need to configure the security system to use the Keycloak client.
 
 First you need to add a new section to the bundle configuration file:
@@ -252,7 +254,19 @@ security:
   default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
 ```
 
-Di seguito il file di configurazione completo:
+Then you need to configure the Keycloak redirect uri to the `mainick_keycloak_security_auth_connect_check` bundle route, which redirects to the default route or referer route after successful login.
+
+It's recommended to change the following environment variable to your project's environment file
+(e.g., `.env` or `.env.local`) with the uri. The same URI must be configured in the Keycloak application client:
+
+```shell
+###> mainick/keycloak-client-bundle ###
+IAM_REDIRECT_URI='https://app.local/auth/keycloak/check'
+TARGET_ROUTE_NAME=app_home
+###< mainick/keycloak-client-bundle ###
+```
+
+Below is the complete configuration file:
 
 ```yaml
 # config/packages/mainick_keycloak_client.yaml
@@ -375,21 +389,22 @@ to the desired route name.
 
 ```shell
 ###> mainick/keycloak-client-bundle ###
-TARGET_ROUTE_NAME=app.home
+TARGET_ROUTE_NAME=app_home
 ###< mainick/keycloak-client-bundle ###
 ```
 
-This will redirect the user to the `app.home` route after a successful login.
+This will redirect the user to the `app_home` route after a successful login.
 
 ### Troubleshooting - You have Access Denied in your browser
 
-If you have an Access Denied error in your browser, tt is maybe because scope roles is misconfigured.
+If you have an Access Denied error in your browser, it is maybe because scope roles is misconfigured.
 
 For correction:
 
-1. Click on **Client scopes** on left panel, then **roles**:
-2. Click on **Mappers** tab, then **client roles**:
-3. Disabled **Add to userinfo**, click on **Save**, then enabled **Add to userinfo** and click on **Save**:
+1. Check whether the **ROLE_ADMIN** and **ROLE_USER** roles have been created for the application client.
+2. Click on **Client scopes** on left panel, then **roles**:
+3. Click on **Mappers** tab, then **client roles**:
+4. Disabled **Add to userinfo**, click on **Save**, then enabled **Add to userinfo** and click on **Save**:
 
 Please check the roles assigned to the user in Keycloak and the roles configured in the Symfony security configuration.
 
