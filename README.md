@@ -242,7 +242,7 @@ for requests to that specific route.
 
 ## Symfony Security Configuration
 
-### Configuration
+### Bundle configuration
 
 To use the `KeycloakClientBundle` with Symfony's security component, you need to configure the security system to use the Keycloak client.
 
