@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Tests\Provider;
 
 use Firebase\JWT\JWT;
+use GuzzleHttp\ClientInterface;
 use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Log\LoggerInterface;
 
@@ -111,19 +113,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(2)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -143,19 +145,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -163,10 +165,9 @@ EOF;
         $user = $this->keycloakClient->verifyToken($token);
 
         // then
-        $this->assertEquals($this->access_token, $token->getToken());
-        $this->assertEquals(time() + 3600, $token->getExpires());
-        $this->assertEquals('mock_refresh_token', $token->getRefreshToken());
-        $this->assertIsArray($token->getValues());
+        $this->assertEquals('test-user', $user->username);
+        $this->assertEquals('Test', $user->firstName);
+        $this->assertEquals('User', $user->lastName);
     }
 
     public function testUserInfo(): void
@@ -177,13 +178,13 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
         $getResourceOwnerStream = $this->createMock(StreamInterface::class);
@@ -191,18 +192,18 @@ EOF;
             ->method('__toString')
             ->willReturn($jwt_tmp);
 
-        $getResourceOwnerResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getResourceOwnerResponse = m::mock(ResponseInterface::class);
         $getResourceOwnerResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getResourceOwnerStream);
+            ->allows('getBody')
+            ->andReturns($getResourceOwnerStream);
         $getResourceOwnerResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
-            ->andReturn($getAccessTokenResponse, $getResourceOwnerResponse);
+            ->allows('send')
+            ->andReturns($getAccessTokenResponse, $getResourceOwnerResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -224,19 +225,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -258,19 +259,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -292,19 +293,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -325,19 +326,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -356,19 +357,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -387,19 +388,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -418,19 +419,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -451,19 +452,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -482,19 +483,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -513,19 +514,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -544,19 +545,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -577,19 +578,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -608,19 +609,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -639,19 +640,19 @@ EOF;
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock('Psr\Http\Message\ResponseInterface');
+        $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
-            ->shouldReceive('getBody')
-            ->andReturn($getAccessTokenStream);
+            ->allows('getBody')
+            ->andReturns($getAccessTokenStream);
         $getAccessTokenResponse
-            ->shouldReceive('getHeader')
-            ->andReturn(['content-type' => 'application/json']);
+            ->allows('getHeader')
+            ->andReturns(['content-type' => 'application/json']);
 
-        $client = m::mock('GuzzleHttp\ClientInterface');
+        $client = m::mock(ClientInterface::class);
         $client
-            ->shouldReceive('send')
+            ->expects('send')
             ->times(1)
-            ->andReturn($getAccessTokenResponse);
+            ->andReturns($getAccessTokenResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
