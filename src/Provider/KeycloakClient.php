@@ -168,6 +168,14 @@ class KeycloakClient implements IamClientInterface
 
             return $user;
         }
+        catch (\UnexpectedValueException $e) {
+            $this->keycloakClientLogger->warning('KeycloakClient::fetchUserFromToken', [
+                'error' => $e->getMessage(),
+                'message' => 'User should have been disconnected from Keycloak server',
+            ]);
+
+            throw $e;
+        }
         catch (\Exception $e) {
             $this->keycloakClientLogger->error('KeycloakClient::fetchUserFromToken', [
                 'error' => $e->getMessage(),
