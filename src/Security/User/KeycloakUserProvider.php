@@ -48,16 +48,21 @@ class KeycloakUserProvider implements UserProviderInterface
 
         try {
             $resourceOwner = $this->iamClient->fetchUserFromToken($identifier);
+            if (!$resourceOwner) {
+                throw new UserNotFoundException(sprintf('User with access token "%s" not found.', $identifier));
+            }
+            $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
+                'resourceOwner' => $resourceOwner->toArray(),
+            ]);
         }
         catch (\UnexpectedValueException $e) {
-            $this->keycloakClientLogger->warning($e->getMessage());
-            $this->keycloakClientLogger->warning('User should have been disconnected from Keycloak server');
+            $this->keycloakClientLogger->warning('KeycloakUserProvider::loadUserByIdentifier', [
+                'error' => $e->getMessage(),
+                'message' => 'User should have been disconnected from Keycloak server',
+            ]);
 
             throw new UserNotFoundException(sprintf('User with access token "%s" not found.', $identifier));
         }
-        $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
-            'resourceOwner' => $resourceOwner->toArray(),
-        ]);
 
         return $resourceOwner;
     }
