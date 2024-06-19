@@ -11,14 +11,14 @@
   "require": {
     "php": ">=8.2",
     "stevenmaguire/oauth2-keycloak": "^5.1",
-    "symfony/routing": "^7.0",
-    "symfony/security-bundle": "^7.0",
-    "symfony/http-kernel": "^7.0",
-    "symfony/framework-bundle": "^7.0"
+    "symfony/routing": "^7.1",
+    "symfony/security-bundle": "^7.1",
+    "symfony/http-kernel": "^7.1",
+    "symfony/framework-bundle": "^7.1"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.52",
-    "phpunit/phpunit": "^11.1",
+    "friendsofphp/php-cs-fixer": "^3.59",
+    "phpunit/phpunit": "^11.2",
     "mockery/mockery": "~1.5.0"
   },
   "autoload": {
