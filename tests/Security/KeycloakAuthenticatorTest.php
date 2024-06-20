@@ -11,15 +11,13 @@ use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
 use Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakAuthenticator;
 use Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider;
 use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
+use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
-use Mockery as m;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
