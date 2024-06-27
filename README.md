@@ -74,7 +74,7 @@ return [
 ];
 ```
 
-Configurando il pacchetto prima dell'installazione, ti assicuri che sarà pronto per l'uso una volta installato.
+By configuring the package before installation, you ensure that it will be ready to use once installed.
 
 ## Usage
 
