@@ -46,7 +46,7 @@ final class KeycloakController extends AbstractController
             'loginReferrer' => $loginReferrer,
         ]);
 
-        return $loginReferrer ? $this->redirect($loginReferrer) : $this->redirect($defaultTargetRouteName);
+        return $loginReferrer ? $this->redirect($loginReferrer) : $this->redirectToRoute($defaultTargetRouteName);
     }
 
     #[Route('/auth/keycloak/logout', name: 'mainick_keycloak_security_auth_logout', methods: ['GET'])]
@@ -56,6 +56,6 @@ final class KeycloakController extends AbstractController
             'defaultTargetRouteName' => $defaultTargetRouteName,
         ]);
 
-        return $this->redirect($defaultTargetRouteName);
+        return $this->redirectToRoute($defaultTargetRouteName);
     }
 }
