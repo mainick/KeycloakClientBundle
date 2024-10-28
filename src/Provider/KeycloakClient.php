@@ -44,12 +44,11 @@ class KeycloakClient implements IamClientInterface
 
         if ('RS256' === $this->encryption_algorithm) {
             if ('' === $this->encryption_key && '' === $this->encryption_key_path) {
-                throw new \RuntimeException('encryption_key is empty');
+                throw new \RuntimeException('Either encryption_key or encryption_key_path must be provided.');
             }
             if ('' !== $this->encryption_key) {
                 $this->keycloakProvider->setEncryptionKey($this->encryption_key);
-            }
-            if ('' !== $this->encryption_key_path) {
+            } elseif ('' !== $this->encryption_key_path) {
                 $this->keycloakProvider->setEncryptionKeyPath($this->encryption_key_path);
             }
         }
