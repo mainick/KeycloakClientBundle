@@ -28,6 +28,12 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('encryption_algorithm')->defaultNull()->end()
                         ->scalarNode('encryption_key')->defaultNull()->end()
                         ->scalarNode('encryption_key_path')->defaultNull()->end()
+                        ->validate()
+                            ->ifTrue(function ($v) {
+                                return empty($v['encryption_key']) && empty($v['encryption_key_path']);
+                            })
+                            ->thenInvalid('At least one of "encryption_key" or "encryption_key_path" must be provided.')
+                        ->end()
                         ->scalarNode('version')->defaultNull()->end()
                     ->end()
                 ->end()
