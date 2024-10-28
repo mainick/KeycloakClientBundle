@@ -84,9 +84,9 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      *
      * @return array<string>
      */
-    private function getRealRoles(): ?array
+    private function getRealRoles(): array
     {
-        return $this->response['realm_access']['roles'] ?? null;
+        return $this->response['realm_access']['roles'] ?? [];
     }
 
     /**
