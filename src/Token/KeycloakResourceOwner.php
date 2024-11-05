@@ -94,7 +94,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      *
      * @return array<string>|null
      */
-    private function getClientRoles(?string $client_id = null): array
+    private function getClientRoles(?string $client_id = null): ?array
     {
         $roles = [];
 
@@ -108,10 +108,6 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
         if ($client_id && isset($this->response['resource_access'][$client_id]['roles'])) {
             $roles = $this->response['resource_access'][$client_id]['roles'] ?? [];
-        }
-
-        if (!$roles) {
-            return [];
         }
 
         return $roles;
