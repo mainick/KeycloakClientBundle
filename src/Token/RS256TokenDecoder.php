@@ -40,5 +40,9 @@ EOD;
         if ($tokenDecoded['exp'] < $now) {
             throw TokenDecoderException::forExpiration(new \Exception('Token has expired'));
         }
+
+        if (str_contains($tokenDecoded['iss'], $realm) === false) {
+            throw TokenDecoderException::forIssuerMismatch(new \Exception('Invalid token issuer'));
+        }
     }
 }
