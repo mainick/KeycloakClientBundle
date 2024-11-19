@@ -8,48 +8,37 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Mainick\KeycloakClientBundle\Exception\TokenDecoderException;
 use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
-use Psr\Log\LoggerInterface;
 
 class HS256TokenDecoder implements TokenDecoderInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
 
     public function decode(string $token, string $key): array
     {
         try {
-            $decoded = JWT::decode($token, new Key($key, 'HS256'));
+            $tokenDecoded = JWT::decode($token, new Key($key, 'HS256'));
 
-            $this->validateToken($decoded);
+            $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
 
-            return (array) $decoded;
+            return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         } catch (\Exception $e) {
-            $this->logger->error('Error decoding token', ['exception' => $e]);
             throw new TokenDecoderException('Error decoding token', $e);
         }
     }
 
-    private function validateToken($token): void
+    public function validateToken(string $realm, array $tokenDecoded): void
     {
         $now = time();
 
-        if ($token->exp < $now) {
-            $this->logger->error('Token has expired', ['exp' => $token->exp, 'now' => $now]);
-            throw new TokenDecoderException('Token has expired');
+        if ($tokenDecoded['exp'] < $now) {
+            throw TokenDecoderException::forExpiration(new \Exception('Token has expired'));
         }
 
-        if ($token->iss !== 'trusted-issuer') {
-            $this->logger->error('Invalid token issuer', ['iss' => $token->iss]);
-            throw new TokenDecoderException('Invalid token issuer');
+        if (str_contains($tokenDecoded['iss'], $realm) === false) {
+            throw TokenDecoderException::forIssuerMismatch(new \Exception('Invalid token issuer'));
         }
-
-        if ($token->aud !== 'your-audience') {
-            $this->logger->error('Invalid token audience', ['aud' => $token->aud]);
-            throw new TokenDecoderException('Invalid token audience');
-        }
+//
+//        if ($tokenDecoded['aud'] !== 'account') {
+//            throw TokenDecoderException::forAudienceMismatch(new \Exception('Invalid token audience'));
+//        }
     }
 }

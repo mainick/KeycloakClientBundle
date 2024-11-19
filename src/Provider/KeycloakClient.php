@@ -103,6 +103,7 @@ class KeycloakClient implements IamClientInterface
 
             $decoder = TokenDecoderFactory::create($this->encryption_algorithm);
             $tokenDecoded = $decoder->decode($accessToken->getToken(), $this->encryption_key);
+            $decoder->validateToken($this->realm, $tokenDecoded);
             $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [
                 'tokenDecoded' => $tokenDecoded,
             ]);
