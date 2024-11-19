@@ -12,13 +12,10 @@ class TokenDecoderFactory
     #[Pure]
     public static function create($algorithm): TokenDecoderInterface
     {
-        switch ($algorithm) {
-            case 'RS256':
-                return new RS256TokenDecoder();
-            case 'HS256':
-                return new HS256TokenDecoder();
-            default:
-                throw new \RuntimeException('Invalid algorithm');
-        }
+        return match ($algorithm) {
+            'RS256' => new RS256TokenDecoder(),
+            'HS256' => new HS256TokenDecoder(),
+            default => throw new \RuntimeException('Invalid algorithm'),
+        };
     }
 }
