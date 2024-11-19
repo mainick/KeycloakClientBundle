@@ -31,6 +31,12 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('encryption_key_passphrase')->defaultNull()->end()
                         ->scalarNode('version')->defaultNull()->end()
                     ->end()
+                    ->validate()
+                        ->ifTrue(function ($v) {
+                            return empty($v['encryption_key']) && empty($v['encryption_key_path']);
+                        })
+                        ->thenInvalid('At least one of "encryption_key" or "encryption_key_path" must be provided.')
+                    ->end()
                 ->end()
                 ->arrayNode('security')
                     ->info('Enable this if you want to use the Keycloak security layer. This will protect your application with Keycloak.')

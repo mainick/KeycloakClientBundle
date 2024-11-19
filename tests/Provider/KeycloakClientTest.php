@@ -34,7 +34,7 @@ EOD;
   "exp": "%s",
   "iat": "%s",
   "jti": "e11a85c8-aa91-4f75-9088-57db4586f8b9",
-  "iss": "https://example.org/auth/realms/test-realm",
+  "iss": "https://example.org/auth/realms/mock_realm",
   "aud": "account",
   "nbf": "%s",
   "sub": "4332085e-b944-4acc-9eb1-27d8f5405f3e",
@@ -93,6 +93,8 @@ EOF;
             'test-app',
             'mock_secret',
             'none',
+            self::ENCRYPTION_ALGORITHM,
+            self::ENCRYPTION_KEY
         );
 
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());

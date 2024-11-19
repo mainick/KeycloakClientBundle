@@ -12,4 +12,24 @@ class TokenDecoderException extends \Exception
     {
         parent::__construct($string, self::CODE, $e);
     }
+
+    public static function forSignatureValidationFailure(\Exception $e): self
+    {
+        return new self('Signature validation failed', $e);
+    }
+
+    public static function forExpiration(\Exception $e): self
+    {
+        return new self('Token has expired', $e);
+    }
+
+    public static function forIssuerMismatch(\Exception $e): self
+    {
+        return new self('Issuer mismatch', $e);
+    }
+
+    public static function forAudienceMismatch(\Exception $e): self
+    {
+        return new self('Audience mismatch', $e);
+    }
 }
