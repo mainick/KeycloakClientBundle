@@ -84,33 +84,35 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      *
      * @return array<string>
      */
-    private function getRealRoles(): ?array
+    private function getRealmRoles(): array
     {
-        return $this->response['realm_access']['roles'] ?? null;
+        return $this->response['realm_access']['roles'] ?? [];
     }
 
     /**
      * Get client roles.
      *
-     * @return array<string>|null
+     * @param string|null $client_id Optional client ID to filter roles
+     * @return array<string>
      */
-    private function getClientRoles(?string $client_id = null): ?array
+    private function getClientRoles(?string $client_id = null): array
     {
-        $roles = [];
+        $resource_access = $this->response['resource_access'] ?? [];
 
-        if (isset($this->response['resource_access'])) {
-            foreach ($this->response['resource_access'] as $client_rif) {
-                if (isset($client_rif['roles'])) {
-                    $roles = [...$roles, ...$client_rif['roles']];
-                }
-            }
+        // If client_id is provided, return only roles for that client
+        if ($client_id !== null) {
+            return $resource_access[$client_id]['roles'] ?? [];
         }
 
-        if ($client_id && isset($this->response['resource_access'][$client_id]['roles'])) {
-            $roles = $this->response['resource_access'][$client_id]['roles'] ?? [];
-        }
-
-        return $roles;
+        // Otherwise, collect all roles from all clients
+        return array_reduce(
+            $resource_access,
+            static fn(array $carry, array $client): array => [
+                ...$carry,
+                ...($client['roles'] ?? [])
+            ],
+            []
+        );
     }
 
     /**
@@ -120,9 +122,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      */
     public function getRoles(?string $client_id = null): array
     {
-        $roles = $this->getRealRoles();
-
-        return [...$roles, ...$this->getClientRoles($client_id)];
+        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
     }
 
     /**
