@@ -22,7 +22,11 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         'app.swagger_ui',
     ];
 
-    private const EXCLUDED_ROUTES_PREFIX = 'mainick_keycloak_security_auth_';
+    private const EXCLUDED_ROUTES_PREFIX = [
+        'mainick_keycloak_security_auth_',
+        '_wdt',
+        '_profiler',
+    ];
 
     public function __construct(
         private LoggerInterface $keycloakClientLogger,
@@ -75,7 +79,7 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         }
 
         return in_array($route, self::EXCLUDED_ROUTES, true) ||
-            str_starts_with($route, self::EXCLUDED_ROUTES_PREFIX);
+            !empty(array_filter(self::EXCLUDED_ROUTES_PREFIX, static fn (string $prefix): bool => str_starts_with($route, $prefix)));
     }
 
     private function shouldSkipControllerValidation(mixed $controller): bool
