@@ -94,12 +94,17 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
             $controllerClass = is_object($controller[0]) ? get_class($controller[0]) : $controller[0];
             $controllerMethod = $controller[1];
         }
-        else {
+        if (is_string($controller)) {
             // Check if "Controller::method" or "Controller:method" format
             $parts = preg_split('/:{1,2}/', $controller);
             if (count($parts) === 2) {
                 $controllerClass = $parts[0];
                 $controllerMethod = $parts[1];
+            }
+
+            if (method_exists($controller, '__invoke')) {
+                $controllerClass = $controller;
+                $controllerMethod = '__invoke';
             }
         }
 
