@@ -4,81 +4,99 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\DTO;
 
+use Mainick\KeycloakClientBundle\Representation\Collection\ProtocolMapperCollection;
+use Mainick\KeycloakClientBundle\Representation\Type\Map;
+
 final readonly class ClientRepresentationDTO
 {
     public function __construct(
-        public string $id,
-        public string $clientId,
-        public string $name,
-        public string $description,
-        public string $rootUrl,
-        public string $adminUrl,
-        public string $baseUrl,
-        public bool $surrogateAuthRequired,
-        public bool $enabled,
-        public bool $alwaysDisplayInConsole,
-        public string $clientAuthenticatorType,
-        public string $secret,
-        public array $redirectUris,
-        public array $webOrigins,
-        public int $notBefore,
-        public bool $bearerOnly,
-        public bool $consentRequired,
-        public bool $standardFlowEnabled,
-        public bool $implicitFlowEnabled,
-        public bool $directAccessGrantsEnabled,
-        public bool $serviceAccountsEnabled,
-        public bool $authorizationServicesEnabled,
-        public bool $publicClient,
-        public bool $frontchannelLogout,
-        public string $protocol,
-        public array $attributes,
-        public array $authenticationFlowBindingOverrides,
-        public bool $fullScopeAllowed,
-        public int $nodeReRegistrationTimeout,
+        public ?string $id = null,
+        public ?string $clientId = null,
+        public ?string $name = null,
+        public ?string $description = null,
+        public ?string $rootUrl = null,
+        public ?string $adminUrl = null,
+        public ?string $baseUrl = null,
+        public ?bool $surrogateAuthRequired = null,
+        public ?bool $enabled = null,
+        public ?bool $alwaysDisplayInConsole = null,
+        public ?string $clientAuthenticatorType = null,
+        public ?string $secret = null,
+        public ?string $registrationAccessToken = null,
+        /** @var string[]|null */
+        public ?array $redirectUris = null,
+        /** @var string[]|null */
+        public ?array $webOrigins = null,
+        public ?int $notBefore = null,
+        public ?bool $bearerOnly = null,
+        public ?bool $consentRequired = null,
+        public ?bool $standardFlowEnabled = null,
+        public ?bool $implicitFlowEnabled = null,
+        public ?bool $directAccessGrantsEnabled = null,
+        public ?bool $serviceAccountsEnabled = null,
+        public ?bool $authorizationServicesEnabled = null,
+        public ?bool $publicClient = null,
+        public ?bool $frontchannelLogout = null,
+        public ?ProtocolMapperCollection $protocol = null,
+        public ?Map $attributes = null,
+        public ?Map $authenticationFlowBindingOverrides = null,
+        public ?bool $fullScopeAllowed = null,
+        public ?int $nodeReRegistrationTimeout = null,
+        public ?Map $registeredNodes = null,
         public array $protocolMappers,
-        public array $defaultClientScopes,
-        public array $optionalClientScopes,
-        public array $access
+        /** @var string[]|null */
+        public ?array $defaultClientScopes = null,
+        /** @var string[]|null */
+        public ?array $optionalClientScopes = null,
+        public ?Map $access = null,
+        public ?string $origin = null
     ) {
     }
 
     public static function fromArray(array $data): self
     {
+        $protocolMappers = [];
+        foreach ($data['protocolMappers'] as $protocolMapper) {
+            $protocolMappers[] = ProtocolMapperRepresentationDTO::fromArray($protocolMapper);
+        }
+
         return new self(
-            id: $data['id'],
-            clientId: $data['clientId'],
-            name: $data['name'],
-            description: $data['description'],
-            rootUrl: $data['rootUrl'],
-            adminUrl: $data['adminUrl'],
-            baseUrl: $data['baseUrl'],
-            surrogateAuthRequired: $data['surrogateAuthRequired'],
-            enabled: $data['enabled'],
-            alwaysDisplayInConsole: $data['alwaysDisplayInConsole'],
-            clientAuthenticatorType: $data['clientAuthenticatorType'],
-            secret: $data['secret'],
-            redirectUris: $data['redirectUris'],
+            id: $data['id'] ?: null,
+            clientId: $data['clientId'] ?: null,
+            name: $data['name'] ?: null,
+            description: $data['description'] ?: null,
+            rootUrl: $data['rootUrl'] ?: null,
+            adminUrl: $data['adminUrl'] ?: null,
+            baseUrl: $data['baseUrl'] ?: null,
+            surrogateAuthRequired: $data['surrogateAuthRequired'] ?: null,
+            enabled: $data['enabled'] ?: null,
+            alwaysDisplayInConsole: $data['alwaysDisplayInConsole'] ?: null,
+            clientAuthenticatorType: $data['clientAuthenticatorType'] ?: null,
+            secret: $data['secret'] ?: null,
+            registrationAccessToken: $data['registrationAccessToken'] ?: null,
+            redirectUris: $data['redirectUris'] ?: null,
             webOrigins: $data['webOrigins'],
-            notBefore: $data['notBefore'],
-            bearerOnly: $data['bearerOnly'],
-            consentRequired: $data['consentRequired'],
-            standardFlowEnabled: $data['standardFlowEnabled'],
-            implicitFlowEnabled: $data['implicitFlowEnabled'],
-            directAccessGrantsEnabled: $data['directAccessGrantsEnabled'],
-            serviceAccountsEnabled: $data['serviceAccountsEnabled'],
-            authorizationServicesEnabled: $data['authorizationServicesEnabled'],
-            publicClient: $data['publicClient'],
-            frontchannelLogout: $data['frontchannelLogout'],
-            protocol: $data['protocol'],
-            attributes: $data['attributes'],
-            authenticationFlowBindingOverrides: $data['authenticationFlowBindingOverrides'],
-            fullScopeAllowed: $data['fullScopeAllowed'],
-            nodeReRegistrationTimeout: $data['nodeReRegistrationTimeout'],
-            protocolMappers: $data['protocolMappers'],
+            notBefore: $data['notBefore'] ?: null,
+            bearerOnly: $data['bearerOnly'] ?: null,
+            consentRequired: $data['consentRequired'] ?: null,
+            standardFlowEnabled: $data['standardFlowEnabled'] ?: null,
+            implicitFlowEnabled: $data['implicitFlowEnabled'] ?: null,
+            directAccessGrantsEnabled: $data['directAccessGrantsEnabled'] ?: null,
+            serviceAccountsEnabled: $data['serviceAccountsEnabled'] ?: null,
+            authorizationServicesEnabled: $data['authorizationServicesEnabled'] ?: null,
+            publicClient: $data['publicClient'] ?: null,
+            frontchannelLogout: $data['frontchannelLogout'] ?: null,
+            protocol: $data['protocol'] ?: null,
+            attributes: $data['attributes'] ?: null,
+            authenticationFlowBindingOverrides: $data['authenticationFlowBindingOverrides'] ?: null,
+            fullScopeAllowed: $data['fullScopeAllowed'] ?: null,
+            nodeReRegistrationTimeout: $data['nodeReRegistrationTimeout'] ?: null,
+            registeredNodes: $data['registeredNodes'] ?: null,
+            protocolMappers: $protocolMappers,
             defaultClientScopes: $data['defaultClientScopes'],
-            optionalClientScopes: $data['optionalClientScopes'],
-            access: $data['access']
+            optionalClientScopes: $data['optionalClientScopes'] ?: null,
+            access: $data['access'] ?: null,
+            origin: $data['origin'] ?: null
         );
     }
 }
