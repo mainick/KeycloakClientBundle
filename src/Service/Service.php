@@ -6,19 +6,24 @@ namespace Mainick\KeycloakClientBundle\Service;
 
 use GuzzleHttp\ClientInterface as HttpClientInterface;
 use GuzzleHttp\Exception\ClientException;
+use http\Exception\UnexpectedValueException;
+use Mainick\KeycloakClientBundle\Exception\KeycloakAuthenticationException;
 use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient;
 use Mainick\KeycloakClientBundle\Representation\Collection\Collection;
 use Mainick\KeycloakClientBundle\Representation\Representation;
+use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
-use PhpParser\JsonDecoder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 abstract class Service
 {
-    private ?AccessTokenInterface $adminAccessToken;
+    private Serializer $serializer;
     private HttpClientInterface $httpClient;
+    private ?AccessTokenInterface $adminAccessToken;
 
     public function __construct(
         protected readonly LoggerInterface $logger,
@@ -26,9 +31,11 @@ abstract class Service
     ) {
         $this->adminAccessToken = null;
         $this->httpClient = $this->keycloakAdminClient->getKeycloakProvider()->getHttpClient();
+
+        $this->serializer = new Serializer();
     }
 
-    protected function executeQuery(string $path, ?Criteria $criteria = null): mixed
+    protected function executeQuery(string $path, string $returnType, ?Criteria $criteria = null): mixed
     {
         if (!$this->isAuthorized()) {
             $this->inizializeAdminAccessToken();
@@ -41,12 +48,22 @@ abstract class Service
         );
 
         if ($this->isSuccessful($response->getStatusCode())) {
+            $content = $response->getBody()->getContents();
+
             $this->logger->info('KeycloakAdminClient::Realms::all', [
                 'status_code' => $response->getStatusCode(),
-                'response' => $response->getBody()->getContents(),
+                'response' => $content,
             ]);
 
-            return (new JsonDecoder())->decode($response->getBody()->getContents());
+            if (empty($content)) {
+                throw new \UnexpectedValueException('Empty response');
+            }
+
+            if ($returnType === 'array') {
+                return (new JsonDecode([JsonDecode::ASSOCIATIVE => true]))->decode($content, JsonEncoder::FORMAT);
+            }
+
+            return $this->serializer->deserialize($content, $returnType);
         }
 
         return null;
@@ -74,9 +91,11 @@ abstract class Service
         );
 
         if ($this->isSuccessful($response->getStatusCode())) {
+            $content = $response->getBody()->getContents();
+
             $this->logger->info('KeycloakAdminClient::Realms::create', [
                 'status_code' => $response->getStatusCode(),
-                'response' => $response->getBody()->getContents(),
+                'response' => $content,
             ]);
 
             return true;
@@ -120,7 +139,7 @@ abstract class Service
     {
         try {
             if (null === $this->adminAccessToken) {
-                throw new \Exception('No refresh token available');
+                throw new KeycloakAuthenticationException('No refresh token available');
             }
 
             $token = $this->keycloakAdminClient->getKeycloakProvider()->getAccessToken('refresh_token', [
@@ -139,7 +158,7 @@ abstract class Service
                     'error' => $e->getMessage(),
                 ]);
 
-                return;
+                throw new KeycloakAuthenticationException('Authentication failed to Keycloak Admin API');
             }
         }
 

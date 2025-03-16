@@ -21,27 +21,12 @@ final class ClientsService extends Service
 {
     public function all(string $realm, ?Criteria $criteria): ?ClientCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/clients', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $clients = new ClientCollection();
-        foreach ($items as $item) {
-            $clients->add(ClientRepresentation::from($item));
-        }
-
-        return $clients;
+        return $this->executeQuery('admin/realms/'.$realm.'/clients', ClientCollection::class, $criteria);
     }
 
     public function get(string $realm, string $clientId): ?ClientRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId);
-        if (null === $item) {
-            return null;
-        }
-
-        return ClientRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId, ClientRepresentation::class);
     }
 
     public function create(string $realm, ClientRepresentation $client): bool
@@ -61,52 +46,22 @@ final class ClientsService extends Service
 
     public function getClientSecret(string $realm, string $clientId): ?CredentialRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/client-secret');
-        if (null === $item) {
-            return null;
-        }
-
-        return CredentialRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/client-secret', CredentialRepresentation::class);
     }
 
     public function getUserSessions(string $realm, string $clientId): ?UserSessionCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/user-sessions');
-        if (null === $items) {
-            return null;
-        }
-
-        $userSessions = new UserSessionCollection();
-        foreach ($items as $item) {
-            $userSessions->add(UserSessionRepresentation::from($item));
-        }
-
-        return $userSessions;
+        return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/user-sessions', UserSessionCollection::class);
     }
 
     public function roles(string $realm, string $clientId): ?RoleCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles');
-        if (null === $items) {
-            return null;
-        }
-
-        $roles = new RoleCollection();
-        foreach ($items as $item) {
-            $roles->add(RoleRepresentation::from($item));
-        }
-
-        return $roles;
+        return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles', RoleCollection::class);
     }
 
     public function role(string $realm, string $clientId, string $roleName): ?RoleRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName);
-        if (null === $item) {
-            return null;
-        }
-
-        return RoleRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName, RoleRepresentation::class);
     }
 
     public function createRole(string $realm, string $clientId, RoleRepresentation $role): bool
@@ -139,17 +94,11 @@ final class ClientsService extends Service
         ?Criteria $criteria
     ): ?GroupCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName.'/groups', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $groups = new GroupCollection();
-        foreach ($items as $item) {
-            $groups->add(GroupRepresentation::from($item));
-        }
-
-        return $groups;
+        return $this->executeQuery(
+            'admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName.'/groups',
+            GroupCollection::class,
+            $criteria
+        );
     }
 
     public function getRoleUsers(
@@ -159,17 +108,11 @@ final class ClientsService extends Service
         ?Criteria $criteria
     ): ?UserCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName.'/users', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $users = new UserCollection();
-        foreach ($items as $item) {
-            $users->add(UserRepresentation::from($item));
-        }
-
-        return $users;
+        return $this->executeQuery(
+            'admin/realms/'.$realm.'/clients/'.$clientId.'/roles/'.$roleName.'/users',
+            UserCollection::class,
+            $criteria
+        );
     }
 
 }

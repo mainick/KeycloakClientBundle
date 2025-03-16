@@ -12,27 +12,12 @@ final class RealmsService extends Service
 {
     public function all(?Criteria $criteria): ?RealmCollection
     {
-        $items = $this->executeQuery('admin/realms', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $realms = new RealmCollection();
-        foreach ($items as $item) {
-            $realms->add(RealmRepresentation::from($item));
-        }
-
-        return $realms;
+        return $this->executeQuery('admin/realms', RealmCollection::class, $criteria);
     }
 
     public function get(string $realm): ?RealmRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm);
-        if (null === $item) {
-            return null;
-        }
-
-        return RealmRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm, RealmRepresentation::class);
     }
 
     public function create(RealmRepresentation $realm): bool

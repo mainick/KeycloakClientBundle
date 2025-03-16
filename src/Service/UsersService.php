@@ -20,32 +20,17 @@ final class UsersService extends Service
 {
     public function all(string $realm, ?Criteria $criteria): ?UserCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $users = new UserCollection();
-        foreach ($items as $item) {
-            $users->add(UserRepresentation::from($item));
-        }
-
-        return $users;
+        return $this->executeQuery('admin/realms/'.$realm.'/users', UserCollection::class, $criteria);
     }
 
     public function get(string $realm, string $userId): ?UserRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId);
-        if (null === $item) {
-            return null;
-        }
-
-        return UserRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId, UserRepresentation::class);
     }
 
     public function count(string $realm, ?Criteria $criteria): int
     {
-        $count = $this->executeQuery('admin/realms/'.$realm.'/users/count', $criteria);
+        $count = $this->executeQuery('admin/realms/'.$realm.'/users/count', 'array', $criteria);
         if (null === $count) {
             return 0;
         }
@@ -70,22 +55,12 @@ final class UsersService extends Service
 
     public function groups(string $realm, string $userId): ?GroupCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/groups');
-        if (null === $items) {
-            return null;
-        }
-
-        $groups = new GroupCollection();
-        foreach ($items as $item) {
-            $groups->add(GroupRepresentation::from($item));
-        }
-
-        return $groups;
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/groups', GroupCollection::class);
     }
 
     public function groupsCount(string $realm, string $userId): int
     {
-        $count = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/groups/count');
+        $count = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/groups/count', 'array');
         if (null === $count) {
             return 0;
         }
@@ -95,62 +70,22 @@ final class UsersService extends Service
 
     public function realmRoles(string $realm, string $userId): ?RoleCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm');
-        if (null === $items) {
-            return null;
-        }
-
-        $roles = new RoleCollection();
-        foreach ($items as $item) {
-            $roles->add(RoleRepresentation::from($item));
-        }
-
-        return $roles;
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm', RoleCollection::class);
     }
 
     public function availableRealmRoles(string $realm, string $userId): ?RoleCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm/available');
-        if (null === $items) {
-            return null;
-        }
-
-        $roles = new RoleCollection();
-        foreach ($items as $item) {
-            $roles->add(RoleRepresentation::from($item));
-        }
-
-        return $roles;
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm/available', RoleCollection::class);
     }
 
     public function sessions(string $realm, string $userId): ?UserSessionCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/sessions');
-        if (null === $items) {
-            return null;
-        }
-
-        $userSessions = new UserSessionCollection();
-        foreach ($items as $item) {
-            $userSessions->add(UserSessionRepresentation::from($item));
-        }
-
-        return $userSessions;
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/sessions', UserSessionCollection::class);
     }
 
     public function offlineSessions(string $realm, string $userId, string $clientId): ?UserSessionCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/offline-sessions/'.$clientId);
-        if (null === $items) {
-            return null;
-        }
-
-        $userSessions = new UserSessionCollection();
-        foreach ($items as $item) {
-            $userSessions->add(UserSessionRepresentation::from($item));
-        }
-
-        return $userSessions;
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/offline-sessions/'.$clientId, UserSessionCollection::class);
     }
 
     public function joinGroup(string $realm, string $userId, string $groupId): bool
@@ -183,22 +118,12 @@ final class UsersService extends Service
 
     public function getProfileConfig(string $realm): ?UPConfig
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/users/profile');
-        if (null === $item) {
-            return null;
-        }
-
-        return UPConfig::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/users/profile', UPConfig::class);
     }
 
     public function getProfileMetadata(string $realm): ?UserProfileMetadata
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/users/profile/metadata');
-        if (null === $item) {
-            return null;
-        }
-
-        return UserProfileMetadata::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/users/profile/metadata', UserProfileMetadata::class);
     }
 
     public function resetPassword(string $realm, string $userId): bool

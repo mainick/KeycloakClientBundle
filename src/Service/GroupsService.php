@@ -14,22 +14,12 @@ final class GroupsService extends Service
 {
     public function all(string $realm, ?Criteria $criteria): ?GroupCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/groups', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $groups = new GroupCollection();
-        foreach ($items as $item) {
-            $groups->add(GroupRepresentation::from($item));
-        }
-
-        return $groups;
+        return $this->executeQuery('admin/realms/'.$realm.'/groups', GroupCollection::class, $criteria);
     }
 
     public function count(string $realm, ?Criteria $criteria): int
     {
-        $count = $this->executeQuery('admin/realms/'.$realm.'/groups/count', $criteria);
+        $count = $this->executeQuery('admin/realms/'.$realm.'/groups/count', 'array', $criteria);
         if (null === $count) {
             return 0;
         }
@@ -39,27 +29,12 @@ final class GroupsService extends Service
 
     public function children(string $realm, string $groupId, ?Criteria $criteria): ?GroupCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/children', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $groups = new GroupCollection();
-        foreach ($items as $item) {
-            $groups->add(GroupRepresentation::from($item));
-        }
-
-        return $groups;
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/children', GroupCollection::class, $criteria);
     }
 
     public function get(string $realm, string $groupId): ?GroupRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId);
-        if (null === $item) {
-            return null;
-        }
-
-        return GroupRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId, GroupRepresentation::class);
     }
 
     public function create(string $realm, GroupRepresentation $group): bool
@@ -84,16 +59,6 @@ final class GroupsService extends Service
 
     public function users(string $realm, string $groupId): ?UserCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/members');
-        if (null === $items) {
-            return null;
-        }
-
-        $users = new UserCollection();
-        foreach ($items as $item) {
-            $users->add(UserRepresentation::from($item));
-        }
-
-        return $users;
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/members', UserCollection::class);
     }
 }

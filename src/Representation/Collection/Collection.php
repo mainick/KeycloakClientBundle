@@ -49,6 +49,8 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
                 (new \ReflectionClass($representation))->getShortName()
             ));
         }
+
+        $this->items[] = $representation;
     }
 
     /**
@@ -56,7 +58,15 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
      */
     public function first(): ?Representation
     {
-        return $this->items[0] ?: null;
+        return $this->items[0] ?? null;
+    }
+
+    /**
+     * @return array<array-key, mixed>
+     */
+    public function all(): array
+    {
+        return $this->items;
     }
 
     /**

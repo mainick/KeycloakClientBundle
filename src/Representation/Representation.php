@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Representation;
 
 use Mainick\KeycloakClientBundle\Exception\PropertyDoesNotExistException;
-use PhpParser\JsonDecoder;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 abstract class Representation implements \JsonSerializable
 {
@@ -33,7 +33,7 @@ abstract class Representation implements \JsonSerializable
      */
     public static function fromJson(string $json): static
     {
-        return static::from((new JsonDecoder())->decode($json));
+        return static::from((new JsonEncoder())->decode($json, JsonEncoder::FORMAT));
     }
 
     final public function jsonSerialize(): array

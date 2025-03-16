@@ -16,27 +16,12 @@ final class RolesService extends Service
 {
     public function all(string $realm, ?Criteria $criteria): ?RoleCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/roles', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $roles = new RoleCollection();
-        foreach ($items as $item) {
-            $roles->add(RoleRepresentation::from($item));
-        }
-
-        return $roles;
+        return $this->executeQuery('admin/realms/'.$realm.'/roles', RoleCollection::class, $criteria);
     }
 
     public function get(string $realm, string $roleName): ?RoleRepresentation
     {
-        $item = $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName);
-        if (null === $item) {
-            return null;
-        }
-
-        return RoleRepresentation::from($item);
+        return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName, RoleRepresentation::class);
     }
 
     public function create(string $realm, RoleRepresentation $role): bool
@@ -56,32 +41,12 @@ final class RolesService extends Service
 
     public function groups(string $realm, string $roleName, ?Criteria $criteria): ?GroupCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/groups', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $groups = new GroupCollection();
-        foreach ($items as $item) {
-            $groups->add(GroupRepresentation::from($item));
-        }
-
-        return $groups;
+        return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/groups', GroupCollection::class, $criteria);
     }
 
     public function users(string $realm, string $roleName, ?Criteria $criteria): ?UserCollection
     {
-        $items = $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/users', $criteria);
-        if (null === $items) {
-            return null;
-        }
-
-        $users = new UserCollection();
-        foreach ($items as $item) {
-            $users->add(UserRepresentation::from($item));
-        }
-
-        return $users;
+        return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/users', UserCollection::class, $criteria);
     }
 
 }
