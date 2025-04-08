@@ -60,6 +60,25 @@ services:
         tags:
             - { name: kernel.event_listener, event: 'Symfony\Component\Security\Http\Event\LogoutEvent', priority: -10 }
 
+    # Rimuovi questi normalizzatori dall'autowiring automatico per evitare
+    # che Symfony provi a iniettare dipendenze circolari
+    Mainick\KeycloakClientBundle\Serializer\CollectionDenormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
+        # Non aggiungere tag
+
+    Mainick\KeycloakClientBundle\Serializer\AttributeNormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
+        # Non aggiungere tag
+
+    Mainick\KeycloakClientBundle\Serializer\RepresentationDenormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
+
 
 #    Mainick\KeycloakClientBundle\Security\EntryPoint\KeycloakAuthenticationEntryPoint: ~
 #    Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakAuthenticator: ~

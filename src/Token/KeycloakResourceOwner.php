@@ -122,7 +122,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
     {
         $roles = $this->getRealRoles();
 
-        return [...$roles, ...$this->getClientRoles($client_id)];
+        return [...($roles ?? []), ...($this->getClientRoles($client_id) ?? [])];
     }
 
     /**

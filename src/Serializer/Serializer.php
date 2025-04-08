@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Serializer;
 
-use Mainick\KeycloakClientBundle\Representation\Collection\UserConsentCollection;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
@@ -14,7 +13,7 @@ use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer as SymfonySerializer;
 
-final readonly class Serializer
+class Serializer
 {
     private SymfonySerializer $serializer;
 
@@ -43,6 +42,9 @@ final readonly class Serializer
             ],
             [
                 new JsonEncoder(),
+            ],
+            [
+                'json_encode_options' => JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
             ]
         );
     }
@@ -52,7 +54,7 @@ final readonly class Serializer
         return null === $data ? null : $this->serializer->serialize($data, JsonEncoder::FORMAT);
     }
 
-    public function deserialize(string $data, string $type): mixed
+    public function deserialize(mixed $data, string $type): mixed
     {
         return $this->serializer->deserialize($data, $type, JsonEncoder::FORMAT);
     }

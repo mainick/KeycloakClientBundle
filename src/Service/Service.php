@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Service;
 
 use GuzzleHttp\ClientInterface as HttpClientInterface;
-use GuzzleHttp\Exception\ClientException;
-use http\Exception\UnexpectedValueException;
 use Mainick\KeycloakClientBundle\Exception\KeycloakAuthenticationException;
 use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient;
@@ -23,7 +21,7 @@ abstract class Service
 {
     private Serializer $serializer;
     private HttpClientInterface $httpClient;
-    private ?AccessTokenInterface $adminAccessToken;
+    public ?AccessTokenInterface $adminAccessToken;
 
     public function __construct(
         protected readonly LoggerInterface $logger,
@@ -32,7 +30,7 @@ abstract class Service
         $this->adminAccessToken = null;
         $this->httpClient = $this->keycloakAdminClient->getKeycloakProvider()->getHttpClient();
 
-        $this->serializer = new Serializer();
+        $this->serializer = new Serializer($this->keycloakAdminClient->getVersion());
     }
 
     protected function executeQuery(string $path, string $returnType, ?Criteria $criteria = null): mixed

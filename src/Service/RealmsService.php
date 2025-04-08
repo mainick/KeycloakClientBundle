@@ -10,7 +10,7 @@ use Mainick\KeycloakClientBundle\Service\Service;
 
 final class RealmsService extends Service
 {
-    public function all(?Criteria $criteria): ?RealmCollection
+    public function all(?Criteria $criteria = null): ?RealmCollection
     {
         return $this->executeQuery('admin/realms', RealmCollection::class, $criteria);
     }
