@@ -48,7 +48,8 @@ abstract class Service
         if ($this->isSuccessful($response->getStatusCode())) {
             $content = $response->getBody()->getContents();
 
-            $this->logger->info('KeycloakAdminClient::Realms::all', [
+            $this->logger->info('KeycloakAdminClient::Service::executeQuery', [
+                'return_type' => $returnType,
                 'status_code' => $response->getStatusCode(),
                 'response' => $content,
             ]);
@@ -91,7 +92,7 @@ abstract class Service
         if ($this->isSuccessful($response->getStatusCode())) {
             $content = $response->getBody()->getContents();
 
-            $this->logger->info('KeycloakAdminClient::Realms::create', [
+            $this->logger->info('KeycloakAdminClient::Service::executeCommand', [
                 'status_code' => $response->getStatusCode(),
                 'response' => $content,
             ]);
@@ -153,7 +154,7 @@ abstract class Service
             }
             catch (\Exception $e) {
                 $this->logger->error('KeycloakAdminClient::getAdminAccessToken', [
-                    'error' => $e->getMessage(),
+                    'error' => $e->getMessage().' - '.$e->getTraceAsString(),
                 ]);
 
                 throw new KeycloakAuthenticationException('Authentication failed to Keycloak Admin API');

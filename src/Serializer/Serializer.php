@@ -26,7 +26,7 @@ class Serializer
             classMetadataFactory: $classMetadataFactory,
             nameConverter: $metadataAwareNameConverter,
             defaultContext: [
-                PropertyNormalizer::NORMALIZE_VISIBILITY => PropertyNormalizer::NORMALIZE_PROTECTED,
+                PropertyNormalizer::NORMALIZE_VISIBILITY => PropertyNormalizer::NORMALIZE_PUBLIC
             ]
         );
 
