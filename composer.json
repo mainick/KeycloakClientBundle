@@ -20,7 +20,8 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.75",
     "phpunit/phpunit": "^11.2",
-    "mockery/mockery": "^1.6"
+    "mockery/mockery": "^1.6",
+    "phpstan/phpstan": "^2.1"
   },
   "autoload": {
     "psr-4": {
@@ -35,6 +36,7 @@
   "scripts": {
     "lint": "php-cs-fixer fix --dry-run --diff --ansi --verbose --allow-risky=no",
     "lint-fix": "php-cs-fixer fix",
+    "types": "phpstan analyse --ansi --memory-limit=256M",
     "test": "phpunit --testdox --colors=always"
   },
   "authors": [
