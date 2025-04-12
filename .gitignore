@@ -12,8 +12,13 @@ gen
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
 
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
 ###> phpunit/phpunit ###
 /phpunit.xml
+phpunit.xml.bak
 /.phpunit.cache/
 .phpunit.result.cache
 ###< phpunit/phpunit ###
