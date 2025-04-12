@@ -6,14 +6,25 @@ namespace Mainick\KeycloakClientBundle\Representation\Type;
 
 use Traversable;
 
+/**
+ * @template T
+ *
+ * @implements \JsonSerializable<T>
+ */
 class Map extends Type implements \Countable, \IteratorAggregate
 {
+    /**
+     * @param array<string, T> $data
+     */
     public function __construct(
         private array $data = []
     ) {
     }
 
-    public function getIterator(): Traversable
+    /**
+     * @return \ArrayIterator<string, T>
+     */
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->data);
     }
@@ -33,6 +44,9 @@ class Map extends Type implements \Countable, \IteratorAggregate
         return array_key_exists($key, $this->data);
     }
 
+    /**
+     * @return T
+     */
     public function get(string $key): mixed
     {
         if (!$this->contains($key)) {
@@ -59,7 +73,7 @@ class Map extends Type implements \Countable, \IteratorAggregate
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, T>
      */
     public function getMap(): array
     {
