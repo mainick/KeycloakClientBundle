@@ -6,13 +6,21 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\Representation;
 
+/**
+ * @template T of Representation
+ *
+ * @implements \IteratorAggregate<int, T>
+ */
 abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerializable
 {
     /**
-     * @var array<array-key, mixed>
+     * @var array<array-key, T>
      */
     protected array $items = [];
 
+    /**
+     * @param iterable<T> $items
+     */
     public function __construct(iterable $items = [])
     {
         foreach ($items as $item) {
@@ -25,19 +33,25 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
         return count($this->items);
     }
 
-    public function getIterator(): \Traversable
+    /**
+     * @return \ArrayIterator<int, T>
+     */
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->items);
     }
 
     /**
-     * @return array<array-key, mixed>
+     * @return array<array-key, T>
      */
     public function jsonSerialize(): array
     {
         return $this->items;
     }
 
+    /**
+     * @param T $representation
+     */
     public function add(Representation $representation): void
     {
         $expectedClass = static::getRepresentationClass();
@@ -54,7 +68,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
     }
 
     /**
-     * @return Representation|null
+     * @return T|null
      */
     public function first(): ?Representation
     {
@@ -62,7 +76,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
     }
 
     /**
-     * @return array<array-key, mixed>
+     * @return array<array-key, T>
      */
     public function all(): array
     {
@@ -70,7 +84,7 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
     }
 
     /**
-     * @return string
+     * @return class-string<T>
      */
     abstract public static function getRepresentationClass(): string;
 }

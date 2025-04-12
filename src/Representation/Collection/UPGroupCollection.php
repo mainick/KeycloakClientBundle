@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\UPGroup;
 
+/**
+ * @extends Collection<UPGroup>
+ */
 class UPGroupCollection extends Collection
 {
     /**

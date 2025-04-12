@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\ClientScopeRepresentation;
 
+/**
+ * @extends Collection<ClientScopeRepresentation>
+ */
 class ClientScopeCollection extends Collection
 {
     /**

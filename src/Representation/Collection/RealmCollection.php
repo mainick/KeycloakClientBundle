@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
 
+/**
+ * @extends Collection<RealmRepresentation>
+ */
 class RealmCollection extends Collection
 {
     /**

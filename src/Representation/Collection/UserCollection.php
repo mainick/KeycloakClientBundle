@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 
+/**
+ * @extends Collection<UserRepresentation>
+ */
 class UserCollection extends Collection
 {
     /**

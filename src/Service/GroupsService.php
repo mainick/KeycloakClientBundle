@@ -7,8 +7,6 @@ namespace Mainick\KeycloakClientBundle\Service;
 use Mainick\KeycloakClientBundle\Representation\Collection\GroupCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UserCollection;
 use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
-use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
-use Mainick\KeycloakClientBundle\Service\Service;
 
 final class GroupsService extends Service
 {

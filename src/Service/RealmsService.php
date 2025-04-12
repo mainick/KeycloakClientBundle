@@ -6,7 +6,6 @@ namespace Mainick\KeycloakClientBundle\Service;
 
 use Mainick\KeycloakClientBundle\Representation\Collection\RealmCollection;
 use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
-use Mainick\KeycloakClientBundle\Service\Service;
 
 final class RealmsService extends Service
 {

@@ -7,10 +7,7 @@ namespace Mainick\KeycloakClientBundle\Service;
 use Mainick\KeycloakClientBundle\Representation\Collection\GroupCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\RoleCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UserCollection;
-use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
 use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
-use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
-use Mainick\KeycloakClientBundle\Service\Service;
 
 final class RolesService extends Service
 {

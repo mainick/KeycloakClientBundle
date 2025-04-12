@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\UserConsentRepresentation;
 
+/**
+ * @extends Collection<UserConsentRepresentation>
+ */
 class UserConsentCollection extends Collection
 {
     /**

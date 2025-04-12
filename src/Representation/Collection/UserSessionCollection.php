@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\UserSessionRepresentation;
 
+/**
+ * @extends Collection<UserSessionRepresentation>
+ */
 class UserSessionCollection extends Collection
 {
     public static function getRepresentationClass(): string

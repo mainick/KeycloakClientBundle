@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\CredentialRepresentation;
 
+/**
+ * @extends Collection<CredentialRepresentation>
+ */
 class CredentialCollection extends Collection
 {
     /**

@@ -6,6 +6,9 @@ namespace Mainick\KeycloakClientBundle\Representation\Collection;
 
 use Mainick\KeycloakClientBundle\Representation\UserProfileAttributeMetadata;
 
+/**
+ * @extends Collection<UserProfileAttributeMetadata>
+ */
 class UserProfileAttributeMetadataCollection extends Collection
 {
     /**

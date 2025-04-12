@@ -8,13 +8,10 @@ use Mainick\KeycloakClientBundle\Representation\Collection\GroupCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\RoleCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UserCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UserSessionCollection;
-use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
 use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
 use Mainick\KeycloakClientBundle\Representation\UPConfig;
 use Mainick\KeycloakClientBundle\Representation\UserProfileMetadata;
 use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
-use Mainick\KeycloakClientBundle\Representation\UserSessionRepresentation;
-use Mainick\KeycloakClientBundle\Service\Service;
 
 final class UsersService extends Service
 {
