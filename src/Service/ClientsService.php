@@ -16,9 +16,6 @@ use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
 final class ClientsService extends Service
 {
     /**
-     * @param string $realm
-     * @param Criteria|null $criteria
-     *
      * @return ClientCollection<ClientRepresentation>|null
      */
     public function all(string $realm, ?Criteria $criteria = null): ?ClientCollection
@@ -56,6 +53,9 @@ final class ClientsService extends Service
         return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientUuid.'/user-sessions', UserSessionCollection::class);
     }
 
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
     public function roles(string $realm, string $clientUuid): ?RoleCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/clients/'.$clientUuid.'/roles', RoleCollection::class);
@@ -89,6 +89,9 @@ final class ClientsService extends Service
         );
     }
 
+    /**
+     * @return GroupCollection<GroupRepresentation>|null
+     */
     public function getRoleGroups(
         string $realm,
         string $clientUuid,
@@ -103,6 +106,9 @@ final class ClientsService extends Service
         );
     }
 
+    /**
+     * @return UserCollection<UserRepresentation>|null
+     */
     public function getRoleUsers(
         string $realm,
         string $clientUuid,

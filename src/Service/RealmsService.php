@@ -9,6 +9,9 @@ use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
 
 final class RealmsService extends Service
 {
+    /**
+     * @return RealmCollection<RealmRepresentation>|null
+     */
     public function all(?Criteria $criteria = null): ?RealmCollection
     {
         return $this->executeQuery('admin/realms', RealmCollection::class, $criteria);

@@ -10,7 +10,10 @@ use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
 
 final class GroupsService extends Service
 {
-    public function all(string $realm, ?Criteria $criteria): ?GroupCollection
+    /**
+     * @return GroupCollection<GroupRepresentation>|null
+     */
+    public function all(string $realm, ?Criteria $criteria = null): ?GroupCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/groups', GroupCollection::class, $criteria);
     }
@@ -25,7 +28,10 @@ final class GroupsService extends Service
         return (int) $count;
     }
 
-    public function children(string $realm, string $groupId, ?Criteria $criteria): ?GroupCollection
+    /**
+     * @return GroupCollection<GroupRepresentation>|null
+     */
+    public function children(string $realm, string $groupId, ?Criteria $criteria = null): ?GroupCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/children', GroupCollection::class, $criteria);
     }
@@ -55,6 +61,9 @@ final class GroupsService extends Service
         return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/groups/'.$groupId);
     }
 
+    /**
+     * @return UserCollection<UserRepresentation>|null
+     */
     public function users(string $realm, string $groupId): ?UserCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/members', UserCollection::class);

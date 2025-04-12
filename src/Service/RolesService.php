@@ -11,7 +11,10 @@ use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
 
 final class RolesService extends Service
 {
-    public function all(string $realm, ?Criteria $criteria): ?RoleCollection
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function all(string $realm, ?Criteria $criteria = null): ?RoleCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/roles', RoleCollection::class, $criteria);
     }
@@ -36,12 +39,18 @@ final class RolesService extends Service
         return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/roles/'.$roleName);
     }
 
-    public function groups(string $realm, string $roleName, ?Criteria $criteria): ?GroupCollection
+    /**
+     * @return GroupCollection<GroupRepresentation>|null
+     */
+    public function groups(string $realm, string $roleName, ?Criteria $criteria = null): ?GroupCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/groups', GroupCollection::class, $criteria);
     }
 
-    public function users(string $realm, string $roleName, ?Criteria $criteria): ?UserCollection
+    /**
+     * @return UserCollection<UserRepresentation>|null
+     */
+    public function users(string $realm, string $roleName, ?Criteria $criteria = null): ?UserCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/users', UserCollection::class, $criteria);
     }

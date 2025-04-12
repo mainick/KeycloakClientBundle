@@ -12,10 +12,14 @@ use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
 use Mainick\KeycloakClientBundle\Representation\UPConfig;
 use Mainick\KeycloakClientBundle\Representation\UserProfileMetadata;
 use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
+use Mainick\KeycloakClientBundle\Representation\UserSessionRepresentation;
 
 final class UsersService extends Service
 {
-    public function all(string $realm, ?Criteria $criteria): ?UserCollection
+    /**
+     * @return UserCollection<UserRepresentation>|null
+     */
+    public function all(string $realm, ?Criteria $criteria = null): ?UserCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users', UserCollection::class, $criteria);
     }
@@ -25,7 +29,7 @@ final class UsersService extends Service
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId, UserRepresentation::class);
     }
 
-    public function count(string $realm, ?Criteria $criteria): int
+    public function count(string $realm, ?Criteria $criteria = null): int
     {
         $count = $this->executeQuery('admin/realms/'.$realm.'/users/count', 'array', $criteria);
         if (null === $count) {
@@ -50,6 +54,9 @@ final class UsersService extends Service
         return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/users/'.$userId);
     }
 
+    /**
+     * @return GroupCollection<GroupRepresentation>|null
+     */
     public function groups(string $realm, string $userId): ?GroupCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/groups', GroupCollection::class);
@@ -65,21 +72,33 @@ final class UsersService extends Service
         return (int) $count;
     }
 
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
     public function realmRoles(string $realm, string $userId): ?RoleCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm', RoleCollection::class);
     }
 
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
     public function availableRealmRoles(string $realm, string $userId): ?RoleCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm/available', RoleCollection::class);
     }
 
+    /**
+     * @return UserSessionCollection<UserSessionRepresentation>|null
+     */
     public function sessions(string $realm, string $userId): ?UserSessionCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/sessions', UserSessionCollection::class);
     }
 
+    /**
+     * @return UserSessionCollection<UserSessionRepresentation>|null
+     */
     public function offlineSessions(string $realm, string $userId, string $clientId): ?UserSessionCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/offline-sessions/'.$clientId, UserSessionCollection::class);
