@@ -93,7 +93,7 @@ final class ClientsService extends Service
         string $realm,
         string $clientUuid,
         string $roleName,
-        ?Criteria $criteria
+        ?Criteria $criteria = null
     ): ?GroupCollection
     {
         return $this->executeQuery(
@@ -107,7 +107,7 @@ final class ClientsService extends Service
         string $realm,
         string $clientUuid,
         string $roleName,
-        ?Criteria $criteria
+        ?Criteria $criteria = null
     ): ?UserCollection
     {
         return $this->executeQuery(
