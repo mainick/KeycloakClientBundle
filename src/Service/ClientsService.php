@@ -69,7 +69,6 @@ final class ClientsService extends Service
     public function createRole(string $realm, string $clientUuid, RoleRepresentation $role): bool
     {
         return $this->executeCommand(HttpMethodEnum::POST, 'admin/realms/'.$realm.'/clients/'.$clientUuid.'/roles', $role);
-
     }
 
     public function updateRole(string $realm, string $clientUuid, string $roleName, RoleRepresentation $role): bool
