@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Service;
 
 use Mainick\KeycloakClientBundle\Representation\Collection\GroupCollection;
+use Mainick\KeycloakClientBundle\Representation\Collection\RoleCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UserCollection;
 use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
+use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
 
 final class GroupsService extends Service
 {
@@ -18,7 +20,7 @@ final class GroupsService extends Service
         return $this->executeQuery('admin/realms/'.$realm.'/groups', GroupCollection::class, $criteria);
     }
 
-    public function count(string $realm, ?Criteria $criteria): int
+    public function count(string $realm, ?Criteria $criteria = null): int
     {
         $count = $this->executeQuery('admin/realms/'.$realm.'/groups/count', 'array', $criteria);
         if (null === $count) {
@@ -67,5 +69,41 @@ final class GroupsService extends Service
     public function users(string $realm, string $groupId): ?UserCollection
     {
         return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/members', UserCollection::class);
+    }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function realmRoles(string $realm, string $groupId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', RoleCollection::class);
+    }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function availableRealmRoles(string $realm, string $groupId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm/available', RoleCollection::class);
+    }
+
+    public function addRealmRole(string $realm, string $groupId, RoleRepresentation $role): bool
+    {
+        $roles = new RoleCollection();
+        $roles->add($role);
+        return $this->executeCommand(
+            HttpMethodEnum::POST,
+            'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm',
+            $roles
+        );
+    }
+
+    public function removeRealmRole(string $realm, string $groupId, RoleRepresentation $role): bool
+    {
+        return $this->executeCommand(
+            HttpMethodEnum::DELETE,
+            'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm',
+            $role
+        );
     }
 }
