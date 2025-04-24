@@ -106,4 +106,40 @@ final class GroupsService extends Service
             $role
         );
     }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function clientRoles(string $realm, string $clientUuid, string $groupId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, RoleCollection::class);
+    }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function availableClientRoles(string $realm, string $clientUuid, string $groupId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid.'/available', RoleCollection::class);
+    }
+
+    public function addClientRole(string $realm, string $clientUuid, string $groupId, RoleRepresentation $role): bool
+    {
+        $roles = new RoleCollection();
+        $roles->add($role);
+        return $this->executeCommand(
+            HttpMethodEnum::POST,
+            'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid,
+            $roles
+        );
+    }
+
+    public function removeClientRole(string $realm, string $clientUuid, string $groupId, RoleRepresentation $role): bool
+    {
+        return $this->executeCommand(
+            HttpMethodEnum::DELETE,
+            'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid,
+            $role
+        );
+    }
 }
