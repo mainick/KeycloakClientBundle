@@ -55,6 +55,22 @@ final class UsersService extends Service
     }
 
     /**
+     * @return UserSessionCollection<UserSessionRepresentation>|null
+     */
+    public function sessions(string $realm, string $userId): ?UserSessionCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/sessions', UserSessionCollection::class);
+    }
+
+    /**
+     * @return UserSessionCollection<UserSessionRepresentation>|null
+     */
+    public function offlineSessions(string $realm, string $userId, string $clientId): ?UserSessionCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/offline-sessions/'.$clientId, UserSessionCollection::class);
+    }
+
+    /**
      * @return GroupCollection<GroupRepresentation>|null
      */
     public function groups(string $realm, string $userId): ?GroupCollection
@@ -70,6 +86,16 @@ final class UsersService extends Service
         }
 
         return (int) $count;
+    }
+
+    public function joinGroup(string $realm, string $userId, string $groupId): bool
+    {
+        return $this->executeCommand(HttpMethodEnum::PUT, 'admin/realms/'.$realm.'/users/'.$userId.'/groups/'.$groupId);
+    }
+
+    public function leaveGroup(string $realm, string $userId, string $groupId): bool
+    {
+        return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/users/'.$userId.'/groups/'.$groupId);
     }
 
     /**
@@ -88,38 +114,14 @@ final class UsersService extends Service
         return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm/available', RoleCollection::class);
     }
 
-    /**
-     * @return UserSessionCollection<UserSessionRepresentation>|null
-     */
-    public function sessions(string $realm, string $userId): ?UserSessionCollection
-    {
-        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/sessions', UserSessionCollection::class);
-    }
-
-    /**
-     * @return UserSessionCollection<UserSessionRepresentation>|null
-     */
-    public function offlineSessions(string $realm, string $userId, string $clientId): ?UserSessionCollection
-    {
-        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/offline-sessions/'.$clientId, UserSessionCollection::class);
-    }
-
-    public function joinGroup(string $realm, string $userId, string $groupId): bool
-    {
-        return $this->executeCommand(HttpMethodEnum::PUT, 'admin/realms/'.$realm.'/users/'.$userId.'/groups/'.$groupId);
-    }
-
-    public function leaveGroup(string $realm, string $userId, string $groupId): bool
-    {
-        return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/users/'.$userId.'/groups/'.$groupId);
-    }
-
     public function addRealmRole(string $realm, string $userId, RoleRepresentation $role): bool
     {
+        $roles = new RoleCollection();
+        $roles->add($role);
         return $this->executeCommand(
             HttpMethodEnum::POST,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm',
-            $role
+            $roles
         );
     }
 
@@ -128,6 +130,42 @@ final class UsersService extends Service
         return $this->executeCommand(
             HttpMethodEnum::DELETE,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm',
+            $role
+        );
+    }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function clientRoles(string $realm, string $clientUuid, string $userId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid, RoleCollection::class);
+    }
+
+    /**
+     * @return RoleCollection<RoleRepresentation>|null
+     */
+    public function availableClientRoles(string $realm, string $clientUuid, string $userId): ?RoleCollection
+    {
+        return $this->executeQuery('admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid.'/available', RoleCollection::class);
+    }
+
+    public function addClientRole(string $realm, string $clientUuid, string $userId, RoleRepresentation $role): bool
+    {
+        $roles = new RoleCollection();
+        $roles->add($role);
+        return $this->executeCommand(
+            HttpMethodEnum::POST,
+            'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid,
+            $roles
+        );
+    }
+
+    public function removeClientRole(string $realm, string $clientUuid, string $userId, RoleRepresentation $role): bool
+    {
+        return $this->executeCommand(
+            HttpMethodEnum::DELETE,
+            'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid,
             $role
         );
     }
