@@ -100,10 +100,12 @@ final class GroupsService extends Service
 
     public function removeRealmRole(string $realm, string $groupId, RoleRepresentation $role): bool
     {
+        $roles = new RoleCollection();
+        $roles->add($role);
         return $this->executeCommand(
             HttpMethodEnum::DELETE,
             'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm',
-            $role
+            $roles
         );
     }
 
@@ -136,10 +138,12 @@ final class GroupsService extends Service
 
     public function removeClientRole(string $realm, string $clientUuid, string $groupId, RoleRepresentation $role): bool
     {
+        $roles = new RoleCollection();
+        $roles->add($role);
         return $this->executeCommand(
             HttpMethodEnum::DELETE,
             'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid,
-            $role
+            $roles
         );
     }
 }
