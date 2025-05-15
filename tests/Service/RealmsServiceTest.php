@@ -58,6 +58,11 @@ class RealmsServiceTest extends TestCase
             $this->keycloakAdminClient
         );
         $this->realmsService->adminAccessToken = $this->adminAccessToken;
+
+        $reflection = new \ReflectionClass($this->realmsService);
+        $serializerProperty = $reflection->getProperty('serializer');
+        $serializerProperty->setAccessible(true);
+        $serializerProperty->setValue($this->realmsService, $this->serializer);
     }
 
     protected function tearDown(): void
@@ -86,6 +91,15 @@ class RealmsServiceTest extends TestCase
             ->andReturn($response);
 
         $realmCollection = new RealmCollection();
+        $realm1 = new RealmRepresentation();
+        $realm1->id = 'master';
+        $realm1->realm = 'master';
+        $realm2 = new RealmRepresentation();
+        $realm2->id = 'test';
+        $realm2->realm = 'test';
+        $realmCollection->add($realm1);
+        $realmCollection->add($realm2);
+
         $this->serializer
             ->shouldReceive('deserialize')
             ->with($responseBody, RealmCollection::class)
@@ -99,6 +113,9 @@ class RealmsServiceTest extends TestCase
         // then
         $this->assertInstanceOf(RealmCollection::class, $result);
         $this->assertSame($realmCollection, $result);
+        $this->assertEquals(2, $result->count());
+        $this->assertSame('master', $result->jsonSerialize()[0]->id);
+        $this->assertSame('test', $result->jsonSerialize()[1]->id);
     }
 
     public function testAllWithCriteria(): void
@@ -120,6 +137,15 @@ class RealmsServiceTest extends TestCase
             ->andReturn($response);
 
         $realmCollection = new RealmCollection();
+        $realm1 = new RealmRepresentation();
+        $realm1->id = 'master';
+        $realm1->realm = 'master';
+        $realm2 = new RealmRepresentation();
+        $realm2->id = 'test';
+        $realm2->realm = 'test';
+        $realmCollection->add($realm1);
+        $realmCollection->add($realm2);
+
         $this->serializer
             ->shouldReceive('deserialize')
             ->with($responseBody, RealmCollection::class)
@@ -133,6 +159,9 @@ class RealmsServiceTest extends TestCase
         // then
         $this->assertInstanceOf(RealmCollection::class, $result);
         $this->assertSame($realmCollection, $result);
+        $this->assertEquals(2, $result->count());
+        $this->assertSame('master', $result->jsonSerialize()[0]->id);
+        $this->assertSame('test', $result->jsonSerialize()[1]->id);
     }
 
     public function testGet(): void
@@ -153,10 +182,6 @@ class RealmsServiceTest extends TestCase
 
         $realm = new RealmRepresentation();
         $realm->realm = 'test';
-        $this->serializer
-            ->shouldReceive('deserialize')
-            ->with($responseBody, RealmRepresentation::class)
-            ->andReturn($realm);
 
         $this->logger->shouldReceive('info')->once();
 

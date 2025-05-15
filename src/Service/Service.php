@@ -19,7 +19,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 abstract class Service
 {
-    private Serializer $serializer;
+    protected Serializer $serializer;
     private HttpClientInterface $httpClient;
     public ?AccessTokenInterface $adminAccessToken;
 
