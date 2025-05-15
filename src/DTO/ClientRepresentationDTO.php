@@ -43,7 +43,8 @@ final readonly class ClientRepresentationDTO
         public ?bool $fullScopeAllowed = null,
         public ?int $nodeReRegistrationTimeout = null,
         public ?Map $registeredNodes = null,
-        public array $protocolMappers,
+        /** @var ProtocolMapperRepresentationDTO[]|null */
+        public ?array $protocolMappers,
         /** @var string[]|null */
         public ?array $defaultClientScopes = null,
         /** @var string[]|null */
@@ -92,7 +93,7 @@ final readonly class ClientRepresentationDTO
             fullScopeAllowed: $data['fullScopeAllowed'] ?: null,
             nodeReRegistrationTimeout: $data['nodeReRegistrationTimeout'] ?: null,
             registeredNodes: $data['registeredNodes'] ?: null,
-            protocolMappers: $protocolMappers,
+            protocolMappers: count($protocolMappers) ? $protocolMappers : null,
             defaultClientScopes: $data['defaultClientScopes'],
             optionalClientScopes: $data['optionalClientScopes'] ?: null,
             access: $data['access'] ?: null,
