@@ -10,7 +10,6 @@ use Mainick\KeycloakClientBundle\Representation\Collection\RealmCollection;
 use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
-use Mainick\KeycloakClientBundle\Service\HttpMethodEnum;
 use Mainick\KeycloakClientBundle\Service\RealmsService;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mockery as m;
@@ -19,7 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class RealmsServiceTest extends TestCase
 {
@@ -182,6 +180,11 @@ class RealmsServiceTest extends TestCase
 
         $realm = new RealmRepresentation();
         $realm->realm = 'test';
+
+        $this->serializer
+            ->shouldReceive('deserialize')
+            ->with($responseBody, RealmRepresentation::class)
+            ->andReturn($realm);
 
         $this->logger->shouldReceive('info')->once();
 
