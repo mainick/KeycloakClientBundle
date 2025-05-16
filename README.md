@@ -411,6 +411,519 @@ For correction:
 
 Please check the roles assigned to the user in Keycloak and the roles configured in the Symfony security configuration.
 
+
+## KeycloakAdminClient Provider
+
+The `KeycloakAdminClient` provider allows you to interact with the Keycloak Admin REST API. It provides a convenient way to manage Keycloak resources such as realms, clients, users, groups, and roles.
+
+### Configuration
+
+To use the `KeycloakAdminClient` provider, you need to configure it in your services.yaml file:
+
+```yaml
+services:
+    Mainick\KeycloakClientBundle\Interface\IamAdminClientInterface:
+        alias: Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient
+```
+
+You also need to add the following environment variables to your project's environment file:
+
+```shell
+###> mainick/keycloak-client-bundle ###
+IAM_ADMIN_REALM='master' # Keycloak admin realm name
+IAM_ADMIN_CLIENT_ID='admin-cli' # Keycloak admin client id
+IAM_ADMIN_USERNAME='admin' # Keycloak admin username
+IAM_ADMIN_PASSWORD='admin' # Keycloak admin password
+###< mainick/keycloak-client-bundle ###
+```
+
+### Usage
+
+You can use the `KeycloakAdminClient` provider by injecting the `Mainick\KeycloakClientBundle\Interface\IamAdminClientInterface` interface in your controller or service:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Service;
+
+use Mainick\KeycloakClientBundle\Interface\IamAdminClientInterface;
+
+class IamAdminService
+{
+    public function __construct(
+        private IamAdminClientInterface $iamAdminClient
+    ) {
+    }
+}
+```
+
+### Examples
+
+#### Representations
+
+You can retrieve the list of representations for each Keycloak entity:
+
+```php
+// List all realms: RealmCollection of the RealmRepresentation
+$realms = $iamAdminClient->realms()->all();
+
+// List all clients: ClientCollection of the ClientRepresentation
+$clients = $iamAdminClient->clients()->all(realm: 'realm-test');
+
+// List all users: UserCollection of the UserRepresentation
+$users = $iamAdminClient->users()->all(realm: 'realm-test');
+
+// List all groups: GroupCollection of the GroupRepresentation
+$groups = $iamAdminClient->groups()->all(realm: 'realm-test');
+
+// List all roles: RoleCollection of the RoleRepresentation
+$roles = $iamAdminClient->roles()->all(realm: 'realm-test');
+```
+
+You can retrieve a single representation by its ID:
+
+```php
+// Get a realm by name
+$realmRepresentation = $iamAdminClient->realms()->get(realm: 'realm-test');
+
+// Get a client by UUID
+$clientRepresentation = $iamAdminClient->clients()->get(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd'
+);
+
+// Get a user by ID
+$userRepresentation = $iamAdminClient->users()->get(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+
+// Get a group by ID
+$groupRepresentation = $iamAdminClient->groups()->get(
+    realm: 'realm-test',
+    groupId: '190990fa-cdbf-4b31-b561-0cfc03737414'
+);
+
+// Get a realm role by name
+$roleRealmRepresentation = $iamAdminClient->roles()->get(
+    realm: 'realm-test',
+    roleName: 'ROLE_USER_VIEW'
+);
+
+// Get a client role by name
+$roleClientRepresentation = $iamAdminClient->clients()->role(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_ADD_AGENT'
+);
+```
+
+You can create a new representation:
+
+```php
+// Create a new realm
+$realmRepresentation = new RealmRepresentation(
+    realm: 'realm-test',
+    displayName: 'Test Realm',
+    enabled: true,
+);
+$realmCreated = $iamAdminClient->realms()->create($realmRepresentation);
+
+// Create a new client (specify the realm)
+$clientRepresentation = new ClientRepresentation(
+    name: 'client-test',
+    enabled: true,
+);
+$clientCreated = $iamAdminClient->clients()->create(
+    realm: 'realm-test',
+    client: $clientRepresentation
+);
+```
+
+You can update a representation:
+
+```php
+// Update a realm
+$realmRepresentation = $iamAdminClient->realms()->get(realm: 'realm-test');
+$realmRepresentation->displayName = 'New display name';
+$realmUpdated = $iamAdminClient->realms()->update($realm, $realmRepresentation);
+
+// Update a client (specify the realm)
+$clientRepresentation = $iamAdminClient->clients()->get(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd'
+);
+$clientRepresentation->description = 'Client test updated';
+$clientUpdated = $iamAdminClient->clients()->update(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    clientRepresentation: $clientRepresentation
+);
+```
+
+You can delete a representation:
+
+```php
+// Delete a realm
+$realmDeleted = $iamAdminClient->realms()->delete(realm: 'realm-test');
+
+// Delete a client (specify the realm)
+$clientDeleted = $iamAdminClient->clients()->delete(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd'
+);
+```
+
+#### User Operations
+
+You can retrieve user sessions:
+
+```php
+// List all sessions: UserSessionCollection of the UserSessionRepresentation
+$sessions = $iamAdminClient->users()->sessions(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+```
+
+You can retrieve user groups:
+
+```php
+// List all groups: GroupCollection of the GroupRepresentation
+$groups = $iamAdminClient->users()->groups(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+```
+
+You can add a user to a group:
+
+```php
+$groups = $iamAdminClient->users()->joinGroup(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    groupId: '190990fa-cdbf-4b31-b561-0cfc03737414'
+);
+```
+
+You can remove a user from a group:
+
+```php
+$groups = $iamAdminClient->users()->leaveGroup(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    groupId: '190990fa-cdbf-4b31-b561-0cfc03737414'
+);
+```
+
+You can retrieve user roles:
+
+```php
+// List all realm roles: RoleCollection of the RoleRepresentation
+$userRolesRealm = $iamAdminClient->users()->realmRoles(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+
+// List all client roles: RoleCollection of the RoleRepresentation
+$userRolesClient = $iamAdminClient->users()->clientRoles(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+```
+
+You can retrieve available user roles:
+
+```php
+// List all available realm roles: RoleCollection of the RoleRepresentation
+$userRolesRealm = $iamAdminClient->users()->availableRealmRoles(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+
+// List all available client roles: RoleCollection of the RoleRepresentation
+$userRolesClient = $iamAdminClient->users()->availableClientRoles(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+```
+
+You can assign a role to a user:
+
+```php
+// Assign a realm role to a user
+$roleRealmRepresentation = $iamAdminClient->roles()->get(
+    realm: 'realm-test',
+    roleName: 'ROLE_REALM_TEST',
+);
+$iamAdminClient->users()->addRealmRole(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    role: $roleRealmRepresentation
+);
+
+// Assign a client role to a user
+$roleClientRepresentation = $iamAdminClient->clients()->role(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_CLIENT_TEST',
+);
+$iamAdminClient->users()->addClientRole(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    role: $roleClientRepresentation
+);
+```
+
+You can remove a role from a user:
+
+```php
+// Remove a realm role from a user
+$roleRealmRepresentation = $iamAdminClient->roles()->get(
+    realm: 'realm-test',
+    roleName: 'ROLE_REALM_TEST',
+);
+$iamAdminClient->users()->removeRealmRole(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    role: $roleRealmRepresentation
+);
+
+// Remove a client role from a user
+$roleClientRepresentation = $iamAdminClient->clients()->role(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_CLIENT_TEST',
+);
+$iamAdminClient->users()->removeClientRole(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3',
+    role: $roleClientRepresentation
+);
+```
+
+#### Group Operations
+
+You can retrieve subgroups:
+
+```php
+/** @var GroupCollection $groups */
+$groups = $iamAdminClient->groups()->all(realm: 'realm-test');
+if ($groups->count()) {
+    $level = 1;
+    foreach ($groups as $group) {
+        echo sprintf('%s> Group "%s"'."<br/>", str_repeat('-', $level), $group->name);
+
+        if ($group->subGroupCount) {
+            /** @var GroupCollection $subGroups */
+            $subGroups = $iamAdminClient->groups()->children(
+                realm: 'realm-test',
+                groupId: $group->id
+            );
+            if ($subGroups->count()) {
+                $level++;
+                foreach ($subGroups as $subGroup) {
+                    echo sprintf('%s> SubGroup "%s"'."<br/>", str_repeat('-', $level), $subGroup->name);
+                }
+            }
+        }
+    }
+}
+```
+
+You can create a subgroup:
+
+```php
+$subGroupRepresentation = new GroupRepresentation(
+    name: 'Test Sub Group',
+);
+$groups = $iamAdminClient->groups()->createChild(
+    realm: 'realm-test',
+    parentGroupId: '190990fa-cdbf-4b31-b561-0cfc03737414',
+    group: $subGroupRepresentation
+);
+```
+
+You can retrieve users in a group:
+
+```php
+// List all users: UserCollection of the UserRepresentation
+$users = $iamAdminClient->groups()->users(
+    realm: 'realm-test',
+    groupId: '190990fa-cdbf-4b31-b561-0cfc03737414'
+);
+```
+
+#### Role Operations
+
+You can retrieve roles:
+
+```php
+// List all realm roles: RoleCollection of the RoleRepresentation
+$rolesRealm = $iamAdminClient->roles()->all(realm: 'realm-test');
+
+// List all client roles: RoleCollection of the RoleRepresentation
+$rolesClient = $iamAdminClient->clients()->roles(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd'
+);
+```
+
+You can create a new role:
+
+```php
+// Create a new realm role
+$roleRepresentation = new RoleRepresentation(
+    name: 'ROLE_REALM_TEST',
+    description: 'Role Realm for test',
+);
+$roleRealm = $iamAdminClient->roles()->create(
+    realm: 'realm-test',
+    role: $roleRepresentation
+);
+
+// Create a new client role
+$roleRepresentation = new RoleRepresentation(
+    name: 'ROLE_CLIENT_TEST',
+    description: 'Role Client for test',
+);
+$roleClient = $iamAdminClient->clients()->createRole(
+    realm: $realm,
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    role: $roleRepresentation
+);
+```
+
+You can update a role:
+
+```php
+// Update a realm role
+$roleRealmRepresentation = $iamAdminClient->roles()->get(
+    realm: 'realm-test',
+    roleName: 'ROLE_REALM_TEST',
+);
+$roleRealmRepresentation->description = 'Description test';
+$roleRealmUpdated = $iamAdminClient->roles()->update(
+    realm: 'realm-test',
+    roleName: 'ROLE_REALM_TEST',
+    roleRepresentation: $roleRealmRepresentation,
+);
+
+// Update a client role
+$roleClientRepresentation = $iamAdminClient->clients()->role(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_CLIENT_TEST',
+);
+$roleClientRepresentation->description = 'Description test';
+$roleClientUpdated = $iamAdminClient->clients()->updateRole(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_CLIENT_TEST',
+    roleRepresentation: $roleClientRepresentation,
+);
+```
+
+You can delete a role:
+
+```php
+// Delete a realm role
+$roleRealmDeleted = $iamAdminClient->roles()->delete(
+    realm: 'realm-test',
+    roleName: 'ROLE_REALM_TEST',
+);
+
+// Delete a client role
+$roleClientDeleted = $iamAdminClient->clients()->deleteRole(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd',
+    roleName: 'ROLE_CLIENT_TEST'
+);
+```
+
+#### User Profile Configuration
+
+You can retrieve the user profile configuration:
+
+```php
+$userProfileConfig = $iamAdminClient->users()->getProfileConfig($realm);
+```
+
+You can check if unmanaged attributes are enabled:
+
+```php
+if ($userProfileConfig->unmanagedAttributePolicy === UnmanagedAttributePolicyEnum::ADMIN_EDIT) {
+    echo "Unmanaged attribute policy is set to ADMIN_EDIT. You can edit unmanaged attributes.";
+}
+```
+
+You can add an unmanaged attribute:
+
+```php
+$user = $iamAdminClient->users()->get(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+$user->attributes = $user->attributes->with('school', ['school1', 'school2']);
+
+$userUpdated = $iamAdminClient->users()->update(
+    realm: 'realm-test',
+    userId: $user->id,
+    user: $user);
+```
+
+You can update an unmanaged attribute:
+
+```php
+$user = $iamAdminClient->users()->get(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+$user->attributes = $user->attributes->with('social', ['mainick-facebook']);
+
+$userUpdated = $iamAdminClient->users()->update(
+    realm: 'realm-test',
+    userId: $user->id,
+    user: $user
+);
+```
+
+You can remove an unmanaged attribute:
+
+```php
+$user = $iamAdminClient->users()->get(
+    realm: 'realm-test',
+    userId: '8cd92f79-7919-4486-a0fb-0cb7dd517ac3'
+);
+$user->attributes = $user->attributes->without('social');
+
+$userUpdated = $iamAdminClient->users()->update(
+    realm: 'realm-test',
+    userId: $user->id,
+    user: $user
+);
+```
+
+#### User Sessions
+
+You can retrieve user sessions for a specific client:
+
+```php
+$userSessions = $iamAdminClient->clients()->getUserSessions(
+    realm: 'realm-test',
+    clientUuid: '32f77927-0bfd-4ef2-8e27-2932984634cd'
+);
+if ($userSessions->count()) {
+    echo sprintf('Client %s has %d user sessions %s', $client->clientId, $userSessions->count(), PHP_EOL);
+}
+```
+
 ## Running the Tests
 
 Install the [Composer](http://getcomposer.org/) dependencies:
@@ -434,7 +947,6 @@ composer test
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
-
 
 ## Contributing
 
