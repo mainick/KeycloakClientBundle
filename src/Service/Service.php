@@ -6,7 +6,6 @@ namespace Mainick\KeycloakClientBundle\Service;
 
 use GuzzleHttp\ClientInterface as HttpClientInterface;
 use Mainick\KeycloakClientBundle\Exception\KeycloakAuthenticationException;
-use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient;
 use Mainick\KeycloakClientBundle\Representation\Collection\Collection;
 use Mainick\KeycloakClientBundle\Representation\Representation;
@@ -21,13 +20,11 @@ abstract class Service
 {
     protected Serializer $serializer;
     private HttpClientInterface $httpClient;
-    public ?AccessTokenInterface $adminAccessToken;
 
     public function __construct(
         protected readonly LoggerInterface $logger,
         protected readonly KeycloakAdminClient $keycloakAdminClient,
     ) {
-        $this->adminAccessToken = null;
         $this->httpClient = $this->keycloakAdminClient->getKeycloakProvider()->getHttpClient();
 
         $this->serializer = new Serializer($this->keycloakAdminClient->getVersion());
@@ -110,7 +107,7 @@ abstract class Service
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer '.$this->adminAccessToken->getToken(),
+                'Authorization' => 'Bearer '.$this->keycloakAdminClient->getAdminAccessToken()?->getToken(),
             ],
         ];
     }
@@ -131,18 +128,18 @@ abstract class Service
 
     private function isAuthorized(): bool
     {
-        return null !== $this->adminAccessToken && false === $this->adminAccessToken->hasExpired();
+        return null !== $this->keycloakAdminClient->getAdminAccessToken() && false !== $this->keycloakAdminClient->getAdminAccessToken()->hasExpired();
     }
 
     private function inizializeAdminAccessToken(): void
     {
         try {
-            if (null === $this->adminAccessToken) {
+            if (null === $this->keycloakAdminClient->getAdminAccessToken()) {
                 throw new KeycloakAuthenticationException('No refresh token available');
             }
 
             $token = $this->keycloakAdminClient->getKeycloakProvider()->getAccessToken('refresh_token', [
-                'refresh_token' => $this->adminAccessToken->getRefreshToken(),
+                'refresh_token' => $this->keycloakAdminClient->getAdminAccessToken()->getRefreshToken(),
             ]);
         }
         catch (\Exception $e) {
@@ -154,7 +151,7 @@ abstract class Service
             }
             catch (\Exception $e) {
                 $this->logger->error('KeycloakAdminClient::getAdminAccessToken', [
-                    'error' => $e->getMessage().' - '.$e->getTraceAsString(),
+                    'error' => 'Authentication failed to Keycloak Admin API - '.$e->getMessage().' - '.$e->getTraceAsString(),
                 ]);
 
                 throw new KeycloakAuthenticationException('Authentication failed to Keycloak Admin API');
@@ -174,6 +171,6 @@ abstract class Service
             'refresh_token' => $accessToken->getRefreshToken(),
         ]);
 
-        $this->adminAccessToken = $accessToken;
+        $this->keycloakAdminClient->setAdminAccessToken($accessToken);
     }
 }

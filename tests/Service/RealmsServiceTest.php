@@ -51,11 +51,12 @@ class RealmsServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
+        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+
         $this->realmsService = new RealmsService(
             $this->logger,
             $this->keycloakAdminClient
         );
-        $this->realmsService->adminAccessToken = $this->adminAccessToken;
 
         $reflection = new \ReflectionClass($this->realmsService);
         $serializerProperty = $reflection->getProperty('serializer');

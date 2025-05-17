@@ -56,11 +56,12 @@ class GroupsServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
+        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+
         $this->groupsService = new GroupsService(
             $this->logger,
             $this->keycloakAdminClient
         );
-        $this->groupsService->adminAccessToken = $this->adminAccessToken;
 
         $reflection = new \ReflectionClass($this->groupsService);
         $serializerProperty = $reflection->getProperty('serializer');

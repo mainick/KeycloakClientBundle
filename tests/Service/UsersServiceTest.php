@@ -60,11 +60,12 @@ class UsersServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
+        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+
         $this->usersService = new UsersService(
             $this->logger,
             $this->keycloakAdminClient
         );
-        $this->usersService->adminAccessToken = $this->adminAccessToken;
 
         $reflection = new \ReflectionClass($this->usersService);
         $serializerProperty = $reflection->getProperty('serializer');

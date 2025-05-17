@@ -55,11 +55,12 @@ class RolesServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
+        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+
         $this->rolesService = new RolesService(
             $this->logger,
             $this->keycloakAdminClient
         );
-        $this->rolesService->adminAccessToken = $this->adminAccessToken;
 
         $reflection = new \ReflectionClass($this->rolesService);
         $serializerProperty = $reflection->getProperty('serializer');

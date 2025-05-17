@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Provider;
 
 use GuzzleHttp\Client;
+use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\IamAdminClientInterface;
 use Mainick\KeycloakClientBundle\Service\ClientsService;
 use Mainick\KeycloakClientBundle\Service\GroupsService;
@@ -17,6 +18,7 @@ use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 class KeycloakAdminClient implements IamAdminClientInterface
 {
     private Keycloak $keycloakProvider;
+    private ?AccessTokenInterface $adminAccessToken = null;
 
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
@@ -77,6 +79,16 @@ class KeycloakAdminClient implements IamAdminClientInterface
     public function getVersion(): string
     {
         return $this->version;
+    }
+
+    public function getAdminAccessToken(): ?AccessTokenInterface
+    {
+        return $this->adminAccessToken;
+    }
+
+    public function setAdminAccessToken(AccessTokenInterface $adminAccessToken): void
+    {
+        $this->adminAccessToken = $adminAccessToken;
     }
 
     public function realms(): RealmsService
