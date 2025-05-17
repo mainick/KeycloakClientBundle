@@ -27,6 +27,16 @@ services:
             string $encryption_key_path: '%mainick_keycloak_client.keycloak.encryption_key_path%'
             string $version: '%mainick_keycloak_client.keycloak.version%'
 
+    Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient:
+        bind:
+            bool $verify_ssl: '%mainick_keycloak_client.keycloak.verify_ssl%'
+            string $base_url: '%mainick_keycloak_client.keycloak.base_url%'
+            string $admin_realm: '%mainick_keycloak_client.admin_cli.realm%'
+            string $admin_client_id: '%mainick_keycloak_client.admin_cli.client_id%'
+            string $admin_username: '%mainick_keycloak_client.admin_cli.username%'
+            string $admin_password: '%mainick_keycloak_client.admin_cli.password%'
+            string $version: '%mainick_keycloak_client.keycloak.version%'
+
     Mainick\KeycloakClientBundle\Controller\KeycloakController:
         public: true
         bind:
@@ -49,6 +59,25 @@ services:
             $defaultTargetRouteName: '%mainick_keycloak_client.security.default_target_route_name%'
         tags:
             - { name: kernel.event_listener, event: 'Symfony\Component\Security\Http\Event\LogoutEvent', priority: -10 }
+
+    # Rimuovi questi normalizzatori dall'autowiring automatico per evitare
+    # che Symfony provi a iniettare dipendenze circolari
+    Mainick\KeycloakClientBundle\Serializer\CollectionDenormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
+        # Non aggiungere tag
+
+    Mainick\KeycloakClientBundle\Serializer\AttributeNormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
+        # Non aggiungere tag
+
+    Mainick\KeycloakClientBundle\Serializer\RepresentationDenormalizer:
+        autowire: false
+        autoconfigure: false
+        public: false
 
 
 #    Mainick\KeycloakClientBundle\Security\EntryPoint\KeycloakAuthenticationEntryPoint: ~
