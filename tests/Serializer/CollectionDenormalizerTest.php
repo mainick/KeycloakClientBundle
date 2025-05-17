@@ -7,7 +7,9 @@ namespace Mainick\KeycloakClientBundle\Tests\Serializer;
 use Mainick\KeycloakClientBundle\Representation\Collection\RealmCollection;
 use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\CollectionDenormalizer;
+use Mainick\KeycloakClientBundle\Serializer\RepresentationDenormalizer;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
@@ -61,7 +63,7 @@ class CollectionDenormalizerTest extends TestCase
             });
 
         // when
-        $result = $denormalizer->denormalize($realmData, RealmCollection::class, 'json');
+        $result = $denormalizer->denormalize($realmData, RealmCollection::class, JsonEncoder::FORMAT);
 
         // then
         $this->assertInstanceOf(RealmCollection::class, $result);
@@ -85,8 +87,11 @@ class CollectionDenormalizerTest extends TestCase
             ]
         );
 
+        // Utilizziamo RepresentationDenormalizer per gestire correttamente i costruttori delle rappresentazioni
+        $representationDenormalizer = new RepresentationDenormalizer($propertyNormalizer);
+
         // Istanza del denormalizzatore da testare
-        $denormalizer = new CollectionDenormalizer($propertyNormalizer);
+        $denormalizer = new CollectionDenormalizer($representationDenormalizer);
 
         // Dati di test
         $realmData = [
@@ -105,7 +110,7 @@ class CollectionDenormalizerTest extends TestCase
         ];
 
         // Esecuzione
-        $result = $denormalizer->denormalize($realmData, RealmCollection::class, 'json');
+        $result = $denormalizer->denormalize($realmData, RealmCollection::class, JsonEncoder::FORMAT);
 
         // Verifiche
         $this->assertInstanceOf(RealmCollection::class, $result);
