@@ -128,7 +128,7 @@ abstract class Service
 
     private function isAuthorized(): bool
     {
-        return null !== $this->keycloakAdminClient->getAdminAccessToken() && false !== $this->keycloakAdminClient->getAdminAccessToken()->hasExpired();
+        return null !== $this->keycloakAdminClient->getAdminAccessToken() && false === $this->keycloakAdminClient->getAdminAccessToken()->hasExpired();
     }
 
     private function inizializeAdminAccessToken(): void
