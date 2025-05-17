@@ -253,8 +253,9 @@ First you need to add a new section to the bundle configuration file:
 
 ```yaml
 # config/packages/mainick_keycloak_client.yaml
-security:
-  default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
+mainick_keycloak_client:
+  security:
+    default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
 ```
 
 Then you need to configure the Keycloak redirect uri to the `mainick_keycloak_security_auth_connect_check` bundle route, which redirects to the default route or referer route after successful login.
@@ -286,8 +287,8 @@ mainick_keycloak_client:
     encryption_key: '%env(IAM_ENCRYPTION_KEY)%'
     encryption_key_path: '%env(IAM_ENCRYPTION_KEY_PATH)%'
     version: '%env(IAM_VERSION)%'
-security:
-  default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
+  security:
+      default_target_route_name: '%env(TARGET_ROUTE_NAME)%'
 ```
 
 ### Route configuration

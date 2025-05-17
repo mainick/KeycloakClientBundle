@@ -8,6 +8,7 @@ use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
 use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -28,11 +29,33 @@ class KeycloakUserProvider implements UserProviderInterface
         }
 
         $accessToken = $user->getAccessToken();
-        if ($accessToken && $accessToken->hasExpired()) {
-            $accessToken = $this->iamClient->refreshToken($accessToken);
+        if (!$accessToken) {
+            $this->keycloakClientLogger->error('KeycloakUserProvider::refreshUser', [
+                'message' => 'User does not have an access token.',
+                'user_id' => $user->getUserIdentifier(),
+            ]);
+            throw new AuthenticationException('No valid access token available. Please login again.');
         }
 
-        return $this->loadUserByIdentifier($accessToken);
+        try {
+            if ($accessToken->hasExpired()) {
+                $accessToken = $this->iamClient->refreshToken($accessToken);
+                if (!$accessToken) {
+                    throw new AuthenticationException('Failed to refresh user session. Please login again.');
+                }
+            }
+
+            return $this->loadUserByIdentifier($accessToken);
+        }
+        catch (\Exception $e) {
+            $this->keycloakClientLogger->error('KeycloakUserProvider::refreshUser', [
+                'error' => $e->getMessage(),
+                'message' => 'Failed to refresh user access token',
+                'user_id' => $user->getUserIdentifier(),
+            ]);
+
+            throw new AuthenticationException('Failed to refresh user session. Please login again.');
+        }
     }
 
     public function supportsClass(string $class): bool
@@ -49,21 +72,27 @@ class KeycloakUserProvider implements UserProviderInterface
         try {
             $resourceOwner = $this->iamClient->fetchUserFromToken($identifier);
             if (!$resourceOwner) {
-                throw new UserNotFoundException(sprintf('User with access token "%s" not found.', $identifier));
+                $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
+                    'message' => 'User not found',
+                    'token' => $identifier->getToken(),
+                ]);
+                throw new UserNotFoundException('User not found or invalid token.');
             }
+
             $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
                 'resourceOwner' => $resourceOwner->toArray(),
             ]);
+
+            return $resourceOwner;
         }
         catch (\UnexpectedValueException $e) {
             $this->keycloakClientLogger->warning('KeycloakUserProvider::loadUserByIdentifier', [
                 'error' => $e->getMessage(),
                 'message' => 'User should have been disconnected from Keycloak server',
+                'token' => $identifier->getToken(),
             ]);
 
-            throw new UserNotFoundException(sprintf('User with access token "%s" not found.', $identifier));
+            throw new UserNotFoundException('Failed to load user from token.');
         }
-
-        return $resourceOwner;
     }
 }
