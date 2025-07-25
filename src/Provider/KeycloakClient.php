@@ -124,7 +124,7 @@ class KeycloakClient implements IamClientInterface
         }
     }
 
-    public function userInfo(AccessTokenInterface $token): ?UserRepresentationDTO
+    public function userInfo(AccessTokenInterface $token, bool $mapToDto = true): null|array|UserRepresentationDTO
     {
         try {
             $this->verifyToken($token);
@@ -139,6 +139,10 @@ class KeycloakClient implements IamClientInterface
             $this->keycloakClientLogger->info('KeycloakClient::userInfo', [
                 'user' => $user->toArray(),
             ]);
+
+            if (!$mapToDto) {
+                return $user->toArray();
+            }
 
             return UserRepresentationDTO::fromArray($user->toArray(), $this->client_id);
         }
