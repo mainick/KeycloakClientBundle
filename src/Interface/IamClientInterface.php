@@ -13,7 +13,7 @@ interface IamClientInterface
 
     public function verifyToken(AccessTokenInterface $token): ?UserRepresentationDTO;
 
-    public function userInfo(AccessTokenInterface $token): ?UserRepresentationDTO;
+    public function userInfo(AccessTokenInterface $token, bool $mapToDto = true): null|array|UserRepresentationDTO;
 
     public function fetchUserFromToken(AccessTokenInterface $token): ?KeycloakResourceOwner;
 

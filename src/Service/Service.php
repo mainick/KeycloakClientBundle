@@ -51,7 +51,7 @@ abstract class Service
                 'response' => $content,
             ]);
 
-            if (empty($content)) {
+            if ($content === '' || $content === null) {
                 throw new \UnexpectedValueException('Empty response');
             }
 
