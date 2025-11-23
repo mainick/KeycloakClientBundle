@@ -54,6 +54,11 @@ final class UsersService extends Service
         return $this->executeCommand(HttpMethodEnum::DELETE, 'admin/realms/'.$realm.'/users/'.$userId);
     }
 
+    public function logout(string $realm, string $userId): bool
+    {
+        return $this->executeCommand(HttpMethodEnum::POST, 'admin/realms/'.$realm.'/users/'.$userId.'/logout');
+    }
+
     /**
      * @return UserSessionCollection<UserSessionRepresentation>|null
      */
