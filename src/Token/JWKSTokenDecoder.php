@@ -23,7 +23,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     public function decode(string $token, string $key): array
     {
         [$headerB64] = explode('.', $token, 2);
-        $header = json_decode(base64_decode(strtr($headerB64, '-_', '+/')), true);
+        $header = json_decode($this->base64urlDecode($headerB64), true);
         $kid = $header['kid'] ?? null;
         $alg = $header['alg'] ?? 'RS256';
 
