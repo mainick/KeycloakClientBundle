@@ -24,12 +24,8 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     {
         [$headerB64] = explode('.', $token, 2);
         $header = json_decode($this->base64urlDecode($headerB64), true);
-        $kid = $header['kid'] ?? null;
+        $kid = $header['kid'] ?? throw new \RuntimeException('Missing kid in JWT header');
         $alg = $header['alg'] ?? 'RS256';
-
-        if (!$kid) {
-            throw new \RuntimeException('Missing kid in JWT header');
-        }
 
         $keyPem = $this->getPemKeyForKid($kid);
         $tokenDecoded = JWT::decode($token, new Key($keyPem, $alg));
