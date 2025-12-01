@@ -1,0 +1,148 @@
+<?php
+
+namespace Mainick\KeycloakClientBundle\Token;
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Mainick\KeycloakClientBundle\Exception\TokenDecoderException;
+use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
+
+final class JWKSTokenDecoder implements TokenDecoderInterface
+{
+    private array $jwksCache = [];
+    private int $cacheTtl = 300; // 5 minutes
+    private ?int $lastFetch = null;
+
+    public function __construct(private readonly array $options)
+    {
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function decode(string $token, string $key): array
+    {
+        [$headerB64] = explode('.', $token);
+        $header = json_decode(base64_decode(strtr($headerB64, '-_', '+/')), true);
+        $kid = $header['kid'] ?? null;
+        $alg = $header['alg'] ?? 'RS256';
+
+        if (!$kid) {
+            throw new \RuntimeException('Missing kid in JWT header');
+        }
+
+        $keyPem = $this->getPemKeyForKid($kid);
+        $tokenDecoded = JWT::decode($token, new Key($keyPem, $alg));
+
+        $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
+
+        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @throws TokenDecoderException
+     */
+    public function validateToken(string $realm, array $tokenDecoded): void
+    {
+        $now = time();
+
+        if ($tokenDecoded['exp'] < $now) {
+            throw TokenDecoderException::forExpiration(new \Exception('Token has expired'));
+        }
+
+        if (false === str_contains($tokenDecoded['iss'], $realm)) {
+            throw TokenDecoderException::forIssuerMismatch(new \Exception('Invalid token issuer'));
+        }
+    }
+
+    private function getPemKeyForKid(string $kid): string
+    {
+        // Simple cache
+        if (!$this->jwksCache || !$this->lastFetch || (time() - $this->lastFetch > $this->cacheTtl)) {
+            $this->jwksCache = $this->fetchJwks();
+            $this->lastFetch = time();
+        }
+
+        foreach ($this->jwksCache as $jwk) {
+            if (($jwk['kid'] ?? '') === $kid && ($jwk['use'] ?? '') === 'sig') {
+                return $this->jwkToPem($jwk);
+            }
+        }
+
+        throw new \RuntimeException("No matching JWK found for kid: $kid");
+    }
+
+    private function fetchJwks(): array
+    {
+        $url = sprintf('%s/realms/%s/protocol/openid-connect/certs', $this->options['base_url'], $this->options['realm']);
+        $json = @file_get_contents($url);
+        if (!$json) {
+            throw new \RuntimeException("Failed to fetch JWKS from $url");
+        }
+
+        $data = json_decode($json, true);
+
+        return $data['keys'] ?? [];
+    }
+
+    private function jwkToPem(array $jwk): string
+    {
+        if (!empty($jwk['x5c'][0])) {
+            $pemCert = "-----BEGIN CERTIFICATE-----\n".
+                chunk_split($jwk['x5c'][0], 64, "\n").
+                "-----END CERTIFICATE-----\n";
+            $key = openssl_pkey_get_public($pemCert);
+            $details = openssl_pkey_get_details($key);
+
+            return $details['key']; // This is the PEM public key
+        }
+
+        if (!isset($jwk['n'], $jwk['e'])) {
+            throw new \RuntimeException('JWK missing modulus or exponent');
+        }
+
+        $modulus = $this->base64urlDecode($jwk['n']);
+        $exponent = $this->base64urlDecode($jwk['e']);
+
+        $modulusEnc = $this->encodeAsn1Integer($modulus);
+        $exponentEnc = $this->encodeAsn1Integer($exponent);
+        $seq = $this->encodeAsn1Sequence($modulusEnc.$exponentEnc);
+
+        $algo = hex2bin('300d06092a864886f70d0101010500'); // rsaEncryption OID
+        $bitStr = "\x03".chr(strlen($seq) + 1)."\x00".$seq;
+        $spki = $this->encodeAsn1Sequence($algo.$bitStr);
+
+        return "-----BEGIN PUBLIC KEY-----\n"
+            .chunk_split(base64_encode($spki), 64, "\n")
+            ."-----END PUBLIC KEY-----\n";
+    }
+
+    private function base64urlDecode(string $data): string
+    {
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
+
+    private function encodeAsn1Integer(string $bytes): string
+    {
+        if (ord($bytes[0]) > 0x7F) {
+            $bytes = "\x00".$bytes;
+        }
+
+        return "\x02".$this->encodeLength(strlen($bytes)).$bytes;
+    }
+
+    private function encodeAsn1Sequence(string $bytes): string
+    {
+        return "\x30".$this->encodeLength(strlen($bytes)).$bytes;
+    }
+
+    private function encodeLength(int $len): string
+    {
+        if ($len < 128) {
+            return chr($len);
+        }
+        $tmp = ltrim(pack('N', $len), "\x00");
+
+        return chr(0x80 | strlen($tmp)).$tmp;
+    }
+}
