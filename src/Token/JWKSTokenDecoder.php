@@ -217,6 +217,13 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
     private function encodeAsn1Integer(string $bytes): string
     {
+        if ($bytes === '') {
+            throw TokenDecoderException::forDecodingError(
+                'Empty byte string provided for ASN.1 integer encoding',
+                new \Exception('Bytes string must not be empty')
+            );
+        }
+
         if (ord($bytes[0]) > 0x7F) {
             $bytes = "\x00".$bytes;
         }
