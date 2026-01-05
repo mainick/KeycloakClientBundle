@@ -10,15 +10,15 @@ use GuzzleHttp\Exception\GuzzleException;
 use Mainick\KeycloakClientBundle\Exception\TokenDecoderException;
 use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
 
-final class JWKSTokenDecoder implements TokenDecoderInterface
+final readonly class JWKSTokenDecoder implements TokenDecoderInterface
 {
 
     public function __construct(
-        private readonly array $options,
-        private readonly ?ClientInterface $httpClient = null
+        private array $options,
+        private ?ClientInterface $httpClient = null
     )
     {
-        foreach (['base_url', 'realm'] as $requiredOption) {
+        foreach (['base_url', 'realm', 'http_timeout', 'http_connect_timeout'] as $requiredOption) {
             if (!\array_key_exists($requiredOption, $this->options) || $this->options[$requiredOption] === null || $this->options[$requiredOption] === '') {
                 throw TokenDecoderException::forInvalidConfiguration(\sprintf(
                     "Missing or empty required option '%s' for %s",
@@ -123,6 +123,8 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
     private function fetchJwks(): array
     {
+        $timeout = $this->options['http_timeout'] ?? 10;
+        $connectTimeout = $this->options['http_connect_timeout'] ?? 5;
         $url = sprintf('%s/realms/%s/protocol/openid-connect/certs', $this->options['base_url'], $this->options['realm']);
 
         // Validate the constructed JWKS URL
@@ -137,8 +139,8 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
             }
 
             $response = $this->httpClient->request('GET', $url, [
-                'timeout' => 10,
-                'connect_timeout' => 5,
+                'timeout' => $timeout,
+                'connect_timeout' => $connectTimeout,
             ]);
             $json = $response->getBody()->getContents();
 
