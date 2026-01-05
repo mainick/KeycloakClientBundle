@@ -202,6 +202,12 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
         $seq = $this->encodeAsn1Sequence($modulusEnc.$exponentEnc);
 
         $algo = hex2bin('300d06092a864886f70d0101010500'); // rsaEncryption OID
+        if ($algo === false) {
+            throw TokenDecoderException::forJwksError(
+                'Failed to decode RSA encryption OID',
+                new \Exception('hex2bin returned false for hardcoded rsaEncryption OID')
+            );
+        }
         $bitStr = "\x03".chr(strlen($seq) + 1)."\x00".$seq;
         $spki = $this->encodeAsn1Sequence($algo.$bitStr);
 
