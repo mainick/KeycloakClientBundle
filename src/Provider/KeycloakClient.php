@@ -19,7 +19,6 @@ use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 class KeycloakClient implements IamClientInterface
 {
     private Keycloak $keycloakProvider;
-    private ClientInterface $httpClient;
 
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
@@ -58,15 +57,14 @@ class KeycloakClient implements IamClientInterface
             $this->keycloakProvider->setVersion($this->version);
         }
 
-        $this->httpClient = new Client([
+        $httpClient = new Client([
             'verify' => $this->verify_ssl,
         ]);
-        $this->keycloakProvider->setHttpClient($this->httpClient);
+        $this->keycloakProvider->setHttpClient($httpClient);
     }
 
     public function setHttpClient(ClientInterface $httpClient): void
     {
-        $this->httpClient = $httpClient;
         $this->keycloakProvider->setHttpClient($httpClient);
     }
 
@@ -103,7 +101,7 @@ class KeycloakClient implements IamClientInterface
                 'values' => $token->getValues(),
             ]);
 
-            $decoder = TokenDecoderFactory::create($this->encryption_algorithm, ['base_url' => $this->base_url, 'realm' => $this->realm], $this->httpClient);
+            $decoder = TokenDecoderFactory::create($this->encryption_algorithm);
             $tokenDecoded = $decoder->decode($accessToken->getToken(), $this->encryption_key);
             $decoder->validateToken($this->realm, $tokenDecoded);
             $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [

@@ -32,29 +32,4 @@ class TokenDecoderException extends \Exception
     {
         return new self('Audience mismatch', $e);
     }
-
-    public static function forInvalidToken(\Exception $e): self
-    {
-        return new self('Invalid token', $e);
-    }
-
-    public static function forInvalidConfiguration(string $message, ?\Exception $e = null): self
-    {
-        return new self($message, $e ?? new \Exception($message));
-    }
-
-    public static function forJwksError(string $message, \Exception $e): self
-    {
-        return new self('JWKS error: ' . $message, $e);
-    }
-
-    public static function forDecodingError(string $message, \Exception $e): self
-    {
-        return new self('Token decoding error: ' . $message, $e);
-    }
-
-    public static function forSecurityViolation(string $message, ?\Exception $e = null): self
-    {
-        return new self('Security violation: ' . $message, $e ?? new \Exception($message));
-    }
 }
