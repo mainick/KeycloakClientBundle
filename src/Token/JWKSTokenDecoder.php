@@ -71,9 +71,6 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         }
-        catch (TokenDecoderException $e) {
-            throw $e;
-        }
         catch (\JsonException $e) {
             throw TokenDecoderException::forDecodingError('JSON parsing failed: ' . $e->getMessage(), $e);
         }
