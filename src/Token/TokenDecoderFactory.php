@@ -13,12 +13,12 @@ class TokenDecoderFactory
     public const ALGORITHM_HS256 = 'HS256';
     public const ALGORITHM_JWKS = 'JWKS';
 
-    public static function create(string $algorithm, array $options = [], ?ClientInterface $httpClient = null): TokenDecoderInterface
+    public static function create(string $algorithm, ClientInterface $httpClient, array $options = []): TokenDecoderInterface
     {
         return match ($algorithm) {
             self::ALGORITHM_RS256 => new RS256TokenDecoder(),
             self::ALGORITHM_HS256 => new HS256TokenDecoder(),
-            self::ALGORITHM_JWKS => new JWKSTokenDecoder($options, $httpClient),
+            self::ALGORITHM_JWKS => new JWKSTokenDecoder($httpClient, $options),
             default => throw new \RuntimeException('Invalid algorithm'),
         };
     }

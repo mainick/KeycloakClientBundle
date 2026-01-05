@@ -14,78 +14,101 @@ class JWKSTokenDecoderTest extends TestCase
 {
     public function testConstructorValidatesBaseUrl(): void
     {
+        $httpClient = $this->createMock(ClientInterface::class);
+
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Invalid base_url format');
 
-        new JWKSTokenDecoder([
-            'base_url' => 'not-a-valid-url',
-            'realm' => 'test-realm',
-        ]);
+        new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'not-a-valid-url',
+                'realm' => 'test-realm',
+            ]);
     }
 
     public function testConstructorRejectsHttpForNonLocalhost(): void
     {
+        $httpClient = $this->createMock(ClientInterface::class);
+
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('HTTP is only allowed for localhost');
 
-        new JWKSTokenDecoder([
-            'base_url' => 'http://keycloak.example.com',
-            'realm' => 'test-realm',
-        ]);
+        new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'http://keycloak.example.com',
+                'realm' => 'test-realm',
+            ]);
     }
 
     public function testConstructorAcceptsHttpForLocalhost(): void
     {
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'http://localhost:8080',
-            'realm' => 'test-realm',
-        ]);
+        $httpClient = $this->createMock(ClientInterface::class);
+
+        $decoder = new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'http://localhost:8080',
+                'realm' => 'test-realm',
+            ]);
 
         $this->assertInstanceOf(JWKSTokenDecoder::class, $decoder);
     }
 
     public function testConstructorRejectsPrivateIpRanges(): void
     {
+        $httpClient = $this->createMock(ClientInterface::class);
+
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
 
-        new JWKSTokenDecoder([
-            'base_url' => 'https://192.168.1.1',
-            'realm' => 'test-realm',
-        ]);
+        new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'https://192.168.1.1',
+                'realm' => 'test-realm',
+            ]);
     }
 
     public function testConstructorRejectsMetadataEndpoints(): void
     {
+        $httpClient = $this->createMock(ClientInterface::class);
+
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
 
-        new JWKSTokenDecoder([
-            'base_url' => 'https://169.254.169.254',
-            'realm' => 'test-realm',
-        ]);
+        new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'https://169.254.169.254',
+                'realm' => 'test-realm',
+            ]);
     }
 
     public function testConstructorAcceptsValidHttpsUrl(): void
     {
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'https://keycloak.example.com',
-            'realm' => 'test-realm',
-        ]);
+        $httpClient = $this->createMock(ClientInterface::class);
+
+        $decoder = new JWKSTokenDecoder(
+            $httpClient, [
+                'base_url' => 'https://keycloak.example.com',
+                'realm' => 'test-realm',
+            ]);
 
         $this->assertInstanceOf(JWKSTokenDecoder::class, $decoder);
     }
 
     public function testFetchJwksValidatesDomainWhitelist(): void
     {
-        // Create a mock HTTP client
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'https://keycloak.example.com',
-            'realm' => 'test-realm',
-            'allowed_jwks_domains' => ['different-domain.com'],
-        ], $httpClient);
+        $decoder = new JWKSTokenDecoder(
+            $httpClient, [
+                'base_url' => 'https://keycloak.example.com',
+                'realm' => 'test-realm',
+                'allowed_jwks_domains' => ['different-domain.com'],
+            ]);
 
         // Create a sample JWT token (doesn't need to be valid for this test)
         $header = base64_encode(json_encode(['kid' => 'test-kid', 'alg' => 'RS256']));
@@ -125,11 +148,13 @@ class JWKSTokenDecoderTest extends TestCase
         $httpClient = $this->createMock(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'https://keycloak.example.com',
-            'realm' => 'test-realm',
-            // No allowed_jwks_domains specified - should default to base_url domain
-        ], $httpClient);
+        $decoder = new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'https://keycloak.example.com',
+                'realm' => 'test-realm',
+                // No allowed_jwks_domains specified - should default to base_url domain
+            ]);
 
         // This should not throw an exception because the JWKS URL uses the same domain as base_url
         $this->assertInstanceOf(JWKSTokenDecoder::class, $decoder);
@@ -159,30 +184,36 @@ class JWKSTokenDecoderTest extends TestCase
         $httpClient = $this->createMock(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'https://auth.example.com',
-            'realm' => 'test-realm',
-            'allowed_jwks_domains' => ['*.example.com'],
-        ], $httpClient);
+        $decoder = new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'https://auth.example.com',
+                'realm' => 'test-realm',
+                'allowed_jwks_domains' => ['*.example.com'],
+            ]);
 
         // This should not throw an exception because auth.example.com matches *.example.com
         $this->assertInstanceOf(JWKSTokenDecoder::class, $decoder);
     }
 
-    public function testRequiresHttpsForJwksEndpoint(): void
+    public function testJwksUrlValidationRejectsHttpForNonLocalhost(): void
     {
         // This test verifies that the JWKS endpoint URL validation rejects HTTP
-        // for non-localhost domains during token decoding. We create a decoder
-        // with valid HTTPS, then simulate an HTTP JWKS URL fetch scenario.
+        // for non-localhost domains by configuring an HTTP base URL directly.
 
         // Create a mock HTTP client
         $httpClient = $this->createMock(ClientInterface::class);
 
-        // Create a valid decoder first with localhost HTTP (which is allowed)
-        $decoder = new JWKSTokenDecoder([
-            'base_url' => 'http://localhost:8080',
-            'realm' => 'test-realm',
-        ], $httpClient);
+        $this->expectException(TokenDecoderException::class);
+        $this->expectExceptionMessage('HTTP is only allowed for localhost.');
+
+        // Constructing the decoder with an HTTP non-localhost base URL should fail validation
+        $decoder = new JWKSTokenDecoder(
+            $httpClient,
+            [
+                'base_url' => 'http://keycloak.example.com',
+                'realm' => 'test-realm',
+            ]);
 
         // Use reflection to modify the base_url to an HTTP non-localhost domain
         // This simulates a scenario where the JWKS URL would be HTTP for a non-localhost host
@@ -212,7 +243,7 @@ class JWKSTokenDecoderTest extends TestCase
         $token = "$headerEncoded.$payloadEncoded.fake-signature";
 
         $this->expectException(TokenDecoderException::class);
-        $this->expectExceptionMessage('JWKS endpoint must use HTTPS for non-localhost hosts');
+        $this->expectExceptionMessage('HTTP is only allowed for localhost.');
 
         // Attempt to decode the token - this should trigger fetchJwks which validates the JWKS URL
         $decoder->decode($token, '');
@@ -236,10 +267,10 @@ class JWKSTokenDecoderTest extends TestCase
 
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Missing kid in token header');
@@ -267,10 +298,10 @@ class JWKSTokenDecoderTest extends TestCase
         $httpClient = $this->createMock(ClientInterface::class);
 
         // Decoder expects RS256
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Token algorithm "HS256" does not match expected algorithm "RS256"');
@@ -318,10 +349,10 @@ class JWKSTokenDecoderTest extends TestCase
         $httpClient = $this->createMock(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('No matching signing key found for kid: non-existent-kid');
@@ -333,10 +364,10 @@ class JWKSTokenDecoderTest extends TestCase
     {
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $expiredToken = [
             'exp' => time() - 3600, // Expired 1 hour ago
@@ -354,10 +385,10 @@ class JWKSTokenDecoderTest extends TestCase
     {
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $tokenWithInvalidIssuer = [
             'exp' => time() + 3600,
@@ -375,10 +406,10 @@ class JWKSTokenDecoderTest extends TestCase
     {
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $validToken = [
             'exp' => time() + 3600,
@@ -397,10 +428,10 @@ class JWKSTokenDecoderTest extends TestCase
     {
         $httpClient = $this->createMock(ClientInterface::class);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Invalid JWT format: token must consist of header.payload.signature');
@@ -438,10 +469,10 @@ class JWKSTokenDecoderTest extends TestCase
         $httpClient = $this->createMock(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
-        $decoder = new JWKSTokenDecoder([
+        $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
             'realm' => 'test-realm',
-        ], $httpClient);
+        ]);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('No keys found in JWKS endpoint');

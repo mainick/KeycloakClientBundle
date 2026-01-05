@@ -11,12 +11,12 @@ use GuzzleHttp\Exception\GuzzleException;
 use Mainick\KeycloakClientBundle\Exception\TokenDecoderException;
 use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
 
-final class JWKSTokenDecoder implements TokenDecoderInterface
+final readonly class JWKSTokenDecoder implements TokenDecoderInterface
 {
 
     public function __construct(
-        private array $options,
-        private readonly ?ClientInterface $httpClient = null
+        private ClientInterface $httpClient,
+        private array $options
     )
     {
         foreach ($options as $allowOption => $value) {
@@ -80,9 +80,9 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
             // Enforce a server-side algorithm instead of trusting the token header.
             // Default to RS256 (commonly used by Keycloak) if not explicitly configured.
             $algorithm = $this->options['alg'] ?? 'RS256';
-            if (isset($header['alg']) && !\hash_equals($algorithm, (string) $header['alg'])) {
+            if (isset($header['alg']) && $algorithm !== (string) $header['alg']) {
                 throw TokenDecoderException::forDecodingError(
-                    \sprintf('Token algorithm "%s" does not match expected algorithm "%s"', $header['alg'], $algorithm),
+                    sprintf('Token algorithm "%s" does not match expected algorithm "%s"', $header['alg'], $algorithm),
                     new \Exception('algorithm mismatch')
                 );
             }
