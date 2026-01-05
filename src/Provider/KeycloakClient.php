@@ -151,6 +151,33 @@ class KeycloakClient implements IamClientInterface
         }
     }
 
+    public function userInfoRaw(AccessTokenInterface $token): ?array
+    {
+        try {
+            $this->verifyToken($token);
+            $accessToken = new AccessTokenLib([
+                'access_token' => $token->getToken(),
+                'refresh_token' => $token->getRefreshToken(),
+                'expires' => $token->getExpires(),
+                'values' => $token->getValues(),
+            ]);
+            $resourceOwner = $this->keycloakProvider->getResourceOwner($accessToken);
+            $user = new KeycloakResourceOwner($resourceOwner->toArray(), $token);
+            $this->keycloakClientLogger->info('KeycloakClient::userInfoRaw', [
+                'user' => $user->toArray(),
+            ]);
+
+            return $user->toArray();
+        }
+        catch (\Exception $e) {
+            $this->keycloakClientLogger->error('KeycloakClient::userInfoRaw', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
     public function fetchUserFromToken(AccessTokenInterface $token): ?KeycloakResourceOwner
     {
         try {

@@ -345,6 +345,37 @@ class UsersServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testLogout(): void
+    {
+        // given
+        $realm = 'test-realm';
+        $userId = 'user1';
+        $responseBody = '';
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->method('getContents')->willReturn($responseBody);
+
+        $response = m::mock(ResponseInterface::class);
+        $response->shouldReceive('getStatusCode')->andReturn(204);
+        $response->shouldReceive('getBody')->andReturn($stream);
+
+        $this->httpClient
+            ->shouldReceive('request')
+            ->with(
+                'POST',
+                'admin/realms/'.$realm.'/users/'.$userId.'/logout',
+                m::type('array')
+            )
+            ->andReturn($response);
+
+        $this->logger->shouldReceive('info')->once();
+
+        // when
+        $result = $this->usersService->logout($realm, $userId);
+
+        // then
+        $this->assertTrue($result);
+    }
+
     public function testSessions(): void
     {
         // given
