@@ -333,7 +333,7 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
             // Support wildcard subdomains (e.g., *.example.com)
             if (str_starts_with($allowedDomain, '*.')) {
                 $domain = substr($allowedDomain, 2);
-                if (str_ends_with($host, '.' . $domain) || $host === $domain) {
+                if ($host === $domain || str_ends_with($host, '.' . $domain)) {
                     $isAllowed = true;
                     break;
                 }
