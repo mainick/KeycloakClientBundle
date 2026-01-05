@@ -28,6 +28,18 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     }
 
     /**
+     * Decode a JWT using keys resolved dynamically from JWKS.
+     *
+     * The {@see TokenDecoderInterface} requires a $key parameter, but this
+     * JWKS-based implementation does not use it because the verification key
+     * is selected based on the "kid" value in the token header and fetched
+     * from the JWKS endpoint. Callers may pass an empty string or any
+     * placeholder value for $key when using this decoder.
+     *
+     * @param string $token The encoded JWT to decode.
+     * @param string $key   Unused in this JWKS-based implementation; present
+     *                      only to satisfy the TokenDecoderInterface.
+     *
      * @throws TokenDecoderException
      */
     public function decode(string $token, string $key): array
