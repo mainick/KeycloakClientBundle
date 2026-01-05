@@ -28,21 +28,25 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     }
 
     /**
-     * @throws \JsonException
+     * @throws TokenDecoderException
      */
     public function decode(string $token, string $key): array
     {
-        [$headerB64] = explode('.', $token, 2);
-        $header = json_decode($this->base64urlDecode($headerB64), true);
-        $kid = $header['kid'] ?? throw new \RuntimeException('Missing kid in JWT header');
-        $alg = $header['alg'] ?? 'RS256';
+        try {
+            [$headerB64] = explode('.', $token, 2);
+            $header = json_decode($this->base64urlDecode($headerB64), true);
+            $kid = $header['kid'] ?? throw new \RuntimeException('Missing kid in JWT header');
+            $alg = $header['alg'] ?? 'RS256';
 
-        $keyPem = $this->getPemKeyForKid($kid);
-        $tokenDecoded = JWT::decode($token, new Key($keyPem, $alg));
+            $keyPem = $this->getPemKeyForKid($kid);
+            $tokenDecoded = JWT::decode($token, new Key($keyPem, $alg));
 
-        $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
+            $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
 
-        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            throw new TokenDecoderException('Failed to decode token', 0, $e);
+        }
     }
 
     /**
