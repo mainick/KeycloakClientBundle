@@ -114,7 +114,13 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
                 chunk_split($jwk['x5c'][0], 64, "\n").
                 "-----END CERTIFICATE-----\n";
             $key = openssl_pkey_get_public($pemCert);
+            if ($key === false) {
+                throw new \RuntimeException('Failed to get public key from certificate using OpenSSL');
+            }
             $details = openssl_pkey_get_details($key);
+            if ($details === false || !isset($details['key'])) {
+                throw new \RuntimeException('Failed to get public key details from certificate using OpenSSL');
+            }
 
             return $details['key']; // This is the PEM public key
         }
