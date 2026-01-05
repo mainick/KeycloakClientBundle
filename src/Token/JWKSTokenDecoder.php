@@ -50,7 +50,15 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     public function decode(string $token, string $key): array
     {
         try {
-            [$headerB64] = explode('.', $token, 2);
+            $parts = explode('.', $token);
+            if (\count($parts) !== 3 || $parts[0] === '' || $parts[1] === '' || $parts[2] === '') {
+                throw TokenDecoderException::forDecodingError(
+                    'Invalid JWT format: token must consist of header.payload.signature',
+                    new \Exception('invalid token format')
+                );
+            }
+
+            [$headerB64] = $parts;
             $header = json_decode($this->base64urlDecode($headerB64), true, 512, JSON_THROW_ON_ERROR);
 
             $kid = $header['kid'] ?? '';
