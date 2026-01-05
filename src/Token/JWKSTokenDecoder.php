@@ -20,7 +20,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     {
         foreach (['base_url', 'realm'] as $requiredOption) {
             if (!\array_key_exists($requiredOption, $this->options) || $this->options[$requiredOption] === null || $this->options[$requiredOption] === '') {
-                throw new \InvalidArgumentException(\sprintf(
+                throw TokenDecoderException::forInvalidConfiguration(\sprintf(
                     "Missing or empty required option '%s' for %s",
                     $requiredOption,
                     self::class
@@ -56,6 +56,14 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
             $kid = $header['kid'] ?? '';
             $alg = $header['alg'] ?? '';
 
+            if (empty($kid)) {
+                throw TokenDecoderException::forDecodingError('Missing kid in token header', new \Exception('kid not found'));
+            }
+
+            if (empty($alg)) {
+                throw TokenDecoderException::forDecodingError('Missing alg in token header', new \Exception('alg not found'));
+            }
+
             $keyPem = $this->getPemKeyForKid($kid);
             $tokenDecoded = JWT::decode($token, new Key($keyPem, $alg));
 
@@ -63,8 +71,14 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         }
+        catch (TokenDecoderException $e) {
+            throw $e;
+        }
+        catch (\JsonException $e) {
+            throw TokenDecoderException::forDecodingError('JSON parsing failed: ' . $e->getMessage(), $e);
+        }
         catch (\Exception $e) {
-            throw new TokenDecoderException('Error decoding token', $e);
+            throw TokenDecoderException::forDecodingError($e->getMessage(), $e);
         }
     }
 
@@ -88,7 +102,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     {
         $jwks = $this->fetchJwks();
         if (empty($jwks)) {
-            throw TokenDecoderException::forInvalidToken(new \Exception('No JWKs found from JWKS endpoint'));
+            throw TokenDecoderException::forJwksError('No keys found in JWKS endpoint', new \Exception('Empty JWKS keys array'));
         }
         foreach ($jwks as $jwk) {
             if (($jwk['kid'] ?? '') === $kid && ($jwk['use'] ?? '') === 'sig') {
@@ -96,7 +110,10 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
             }
         }
 
-        throw TokenDecoderException::forInvalidToken(new \Exception("No matching JWK found for kid: $kid"));
+        throw TokenDecoderException::forJwksError(
+            sprintf('No matching signing key found for kid: %s', $kid),
+            new \Exception('Key ID not found in JWKS')
+        );
     }
 
     private function fetchJwks(): array
@@ -122,7 +139,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
                 ]);
                 $json = file_get_contents($url, false, $context);
                 if ($json === false) {
-                    throw new \RuntimeException('Unable to fetch JWKS from cert endpoint');
+                    throw new \RuntimeException('Unable to fetch JWKS from endpoint');
                 }
             }
 
@@ -130,9 +147,20 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
             return $data['keys'] ?? [];
         } catch (GuzzleException $e) {
-            throw TokenDecoderException::forInvalidToken(new \Exception('Failed to fetch JWKS: ' . $e->getMessage(), 0, $e));
+            throw TokenDecoderException::forJwksError(
+                sprintf('Failed to fetch JWKS from %s: %s', $url, $e->getMessage()),
+                $e
+            );
+        } catch (\JsonException $e) {
+            throw TokenDecoderException::forJwksError(
+                sprintf('Invalid JSON response from JWKS endpoint: %s', $e->getMessage()),
+                $e
+            );
         } catch (\Exception $e) {
-            throw TokenDecoderException::forInvalidToken(new \Exception('Unable to open cert file: ' . $e->getMessage(), 0, $e));
+            throw TokenDecoderException::forJwksError(
+                sprintf('Unable to retrieve JWKS: %s', $e->getMessage()),
+                $e
+            );
         }
     }
 
@@ -144,18 +172,27 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
                 "-----END CERTIFICATE-----\n";
             $key = openssl_pkey_get_public($pemCert);
             if ($key === false) {
-                throw TokenDecoderException::forInvalidToken(new \Exception('Failed to get public key from certificate using OpenSSL'));
+                throw TokenDecoderException::forJwksError(
+                    'Failed to extract public key from certificate',
+                    new \Exception('OpenSSL error: ' . openssl_error_string())
+                );
             }
             $details = openssl_pkey_get_details($key);
             if ($details === false || !isset($details['key'])) {
-                throw TokenDecoderException::forInvalidToken(new \Exception('Failed to get public key details from certificate using OpenSSL'));
+                throw TokenDecoderException::forJwksError(
+                    'Failed to get public key details from certificate',
+                    new \Exception('OpenSSL error: ' . openssl_error_string())
+                );
             }
 
             return $details['key']; // This is the PEM public key
         }
 
         if (!isset($jwk['n'], $jwk['e'])) {
-            throw TokenDecoderException::forInvalidToken(new \Exception('JWK missing modulus or exponent'));
+            throw TokenDecoderException::forJwksError(
+                'JWK missing required fields (modulus or exponent)',
+                new \Exception('Invalid JWK structure')
+            );
         }
 
         $modulus = $this->base64urlDecode($jwk['n']);
@@ -178,7 +215,10 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     {
         $decoded = base64_decode(strtr($data, '-_', '+/'), true);
         if ($decoded === false) {
-            throw TokenDecoderException::forInvalidToken(new \Exception('Failed to decode token'));
+            throw TokenDecoderException::forDecodingError(
+                'Failed to decode base64url string',
+                new \Exception('Invalid base64url format')
+            );
         }
 
         return $decoded;
@@ -211,14 +251,14 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     /**
      * Validate the base URL format to prevent SSRF attacks.
      *
-     * @throws \InvalidArgumentException
+     * @throws TokenDecoderException
      */
     private function validateBaseUrl(string $baseUrl): void
     {
         // Parse the URL
         $parsed = parse_url($baseUrl);
         if ($parsed === false || !isset($parsed['scheme'], $parsed['host'])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw TokenDecoderException::forInvalidConfiguration(sprintf(
                 'Invalid base_url format: %s. Expected a valid URL with scheme and host.',
                 $baseUrl
             ));
@@ -226,7 +266,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
         // Only allow HTTPS (or HTTP for localhost/development)
         if (!in_array($parsed['scheme'], ['https', 'http'], true)) {
-            throw new \InvalidArgumentException(sprintf(
+            throw TokenDecoderException::forSecurityViolation(sprintf(
                 'Invalid base_url scheme: %s. Only http and https are allowed.',
                 $parsed['scheme']
             ));
@@ -234,7 +274,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
         // Enforce HTTPS for non-localhost environments
         if ($parsed['scheme'] === 'http' && !$this->isLocalhost($parsed['host'])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw TokenDecoderException::forSecurityViolation(sprintf(
                 'HTTP is only allowed for localhost. Use HTTPS for: %s',
                 $parsed['host']
             ));
@@ -242,7 +282,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
         // Prevent private IP ranges and localhost in production unless explicitly localhost
         if (!$this->isAllowedHost($parsed['host'])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw TokenDecoderException::forSecurityViolation(sprintf(
                 'The host %s is not allowed. Private IPs and internal hosts are blocked for security.',
                 $parsed['host']
             ));
@@ -258,9 +298,9 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
     {
         $parsed = parse_url($url);
         if ($parsed === false || !isset($parsed['scheme'], $parsed['host'])) {
-            throw TokenDecoderException::forInvalidToken(new \Exception(
+            throw TokenDecoderException::forSecurityViolation(
                 'Invalid JWKS URL format'
-            ));
+            );
         }
 
         // Get allowed domains from configuration
@@ -290,17 +330,17 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
         }
 
         if (!$isAllowed) {
-            throw TokenDecoderException::forInvalidToken(new \Exception(sprintf(
+            throw TokenDecoderException::forSecurityViolation(sprintf(
                 'JWKS URL host "%s" is not in the allowed domains whitelist',
                 $host
-            )));
+            ));
         }
 
         // Additional security check: ensure HTTPS or localhost
         if ($parsed['scheme'] === 'http' && !$this->isLocalhost($host)) {
-            throw TokenDecoderException::forInvalidToken(new \Exception(
+            throw TokenDecoderException::forSecurityViolation(
                 'JWKS endpoint must use HTTPS for non-localhost hosts'
-            ));
+            );
         }
     }
 
