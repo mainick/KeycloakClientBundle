@@ -31,6 +31,11 @@ mainick_keycloak_client:
     encryption_key: '%env(IAM_ENCRYPTION_KEY)%'
     encryption_key_path: '%env(IAM_ENCRYPTION_KEY_PATH)%'
     version: '%env(IAM_VERSION)%'
+    # Optional: Whitelist of allowed domains for JWKS endpoint (security feature)
+    # If not specified, only the domain from base_url is allowed
+    allowed_jwks_domains:
+      - 'keycloak.example.com'
+      - '*.auth.example.com'  # Supports wildcard subdomains
 ```
 
 Additionally, it's recommended to add the following environment variables to your project's environment file

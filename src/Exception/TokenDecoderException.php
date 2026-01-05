@@ -32,4 +32,9 @@ class TokenDecoderException extends \Exception
     {
         return new self('Audience mismatch', $e);
     }
+
+    public static function forInvalidToken(\Exception $e): self
+    {
+        return new self('Invalid token', $e);
+    }
 }
