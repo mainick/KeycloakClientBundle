@@ -15,6 +15,8 @@ interface IamClientInterface
 
     public function userInfo(AccessTokenInterface $token): ?UserRepresentationDTO;
 
+    public function userInfoRaw(AccessTokenInterface $token): ?array;
+
     public function fetchUserFromToken(AccessTokenInterface $token): ?KeycloakResourceOwner;
 
     /**
