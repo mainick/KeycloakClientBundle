@@ -14,7 +14,7 @@ class JWKSTokenDecoderTest extends TestCase
 {
     public function testConstructorValidatesBaseUrl(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Invalid base_url format');
 
         new JWKSTokenDecoder([
@@ -25,7 +25,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsHttpForNonLocalhost(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('HTTP is only allowed for localhost');
 
         new JWKSTokenDecoder([
@@ -46,7 +46,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsPrivateIpRanges(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
 
         new JWKSTokenDecoder([
@@ -57,7 +57,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsMetadataEndpoints(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
 
         new JWKSTokenDecoder([
@@ -97,13 +97,7 @@ class JWKSTokenDecoderTest extends TestCase
             $decoder->decode($token, '');
             $this->fail('Expected TokenDecoderException to be thrown');
         } catch (TokenDecoderException $e) {
-            $this->assertSame('Error decoding token', $e->getMessage());
-
-            // The inner exception (cause) contains the whitelist error message
-            $previous = $e->getPrevious();
-            $this->assertInstanceOf(\Exception::class, $previous);
-            $this->assertStringContainsString('Invalid token', $previous->getMessage());
-            $this->assertStringContainsString('Invalid token', $previous->getMessage());
+            $this->assertStringContainsString('Security violation: JWKS URL host "keycloak.example.com" is not in the allowed domains whitelist', $e->getMessage());
         }
     }
 
@@ -121,7 +115,7 @@ class JWKSTokenDecoderTest extends TestCase
                     'e' => 'AQAB',
                 ],
             ],
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
         // Create a mock response
         $response = $this->createMock(Response::class);
