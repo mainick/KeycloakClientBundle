@@ -16,6 +16,15 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
     public function __construct(private readonly array $options)
     {
+        foreach (['base_url', 'realm'] as $requiredOption) {
+            if (!\array_key_exists($requiredOption, $this->options) || $this->options[$requiredOption] === null || $this->options[$requiredOption] === '') {
+                throw new \InvalidArgumentException(\sprintf(
+                    "Missing or empty required option '%s' for %s",
+                    $requiredOption,
+                    self::class
+                ));
+            }
+        }
     }
 
     /**
