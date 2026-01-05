@@ -171,10 +171,51 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testRequiresHttpsForJwksEndpoint(): void
     {
-        // For this test, we need to test the actual JWKS fetching
-        // We can't easily test this without a real token decode, but the validation
-        // is covered by the previous tests
-        $this->assertTrue(true);
+        // This test verifies that the JWKS endpoint URL validation rejects HTTP
+        // for non-localhost domains during token decoding. We create a decoder
+        // with valid HTTPS, then simulate an HTTP JWKS URL fetch scenario.
+
+        // Create a mock HTTP client
+        $httpClient = $this->createMock(ClientInterface::class);
+
+        // Create a valid decoder first with localhost HTTP (which is allowed)
+        $decoder = new JWKSTokenDecoder([
+            'base_url' => 'http://localhost:8080',
+            'realm' => 'test-realm',
+        ], $httpClient);
+
+        // Use reflection to modify the base_url to an HTTP non-localhost domain
+        // This simulates a scenario where the JWKS URL would be HTTP for a non-localhost host
+        $reflection = new \ReflectionClass($decoder);
+        $optionsProperty = $reflection->getProperty('options');
+        $optionsProperty->setAccessible(true);
+        $options = $optionsProperty->getValue($decoder);
+        $options['base_url'] = 'http://keycloak.example.com';
+        $optionsProperty->setValue($decoder, $options);
+
+        // Create a JWT token with proper structure
+        $header = json_encode([
+            'kid' => 'test-key-id',
+            'alg' => 'RS256',
+            'typ' => 'JWT',
+        ], JSON_THROW_ON_ERROR);
+        $payload = json_encode([
+            'sub' => 'test-user',
+            'exp' => time() + 3600,
+            'iat' => time(),
+            'iss' => 'http://keycloak.example.com/auth/realms/test-realm',
+        ], JSON_THROW_ON_ERROR);
+
+        // Base64url encode the token parts
+        $headerEncoded = rtrim(strtr(base64_encode($header), '+/', '-_'), '=');
+        $payloadEncoded = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
+        $token = "$headerEncoded.$payloadEncoded.fake-signature";
+
+        $this->expectException(TokenDecoderException::class);
+        $this->expectExceptionMessage('JWKS endpoint must use HTTPS for non-localhost hosts');
+
+        // Attempt to decode the token - this should trigger fetchJwks which validates the JWKS URL
+        $decoder->decode($token, '');
     }
 }
 
