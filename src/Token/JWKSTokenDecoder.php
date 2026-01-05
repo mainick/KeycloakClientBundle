@@ -121,24 +121,18 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
         $this->validateJwksUrl($url);
 
         try {
-            if ($this->httpClient !== null) {
-                $response = $this->httpClient->request('GET', $url, [
-                    'timeout' => 10,
-                    'connect_timeout' => 5,
-                ]);
-                $json = $response->getBody()->getContents();
-            } else {
-                // Fallback to file_get_contents if no HTTP client provided
-                $context = stream_context_create([
-                    'http' => [
-                        'timeout' => 10,
-                    ],
-                ]);
-                $json = file_get_contents($url, false, $context);
-                if ($json === false) {
-                    throw new \RuntimeException('Unable to fetch JWKS from endpoint');
-                }
+            if ($this->httpClient === null) {
+                throw TokenDecoderException::forJwksError(
+                    'HTTP client is not configured; unable to fetch JWKS.',
+                    new \RuntimeException('Missing HTTP client for JWKS retrieval')
+                );
             }
+
+            $response = $this->httpClient->request('GET', $url, [
+                'timeout' => 10,
+                'connect_timeout' => 5,
+            ]);
+            $json = $response->getBody()->getContents();
 
             $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
