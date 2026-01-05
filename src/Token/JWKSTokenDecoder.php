@@ -18,7 +18,7 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
         private ?ClientInterface $httpClient = null
     )
     {
-        foreach (['base_url', 'realm', 'http_timeout', 'http_connect_timeout'] as $requiredOption) {
+        foreach (['base_url', 'realm', 'alg', 'http_timeout', 'http_connect_timeout'] as $requiredOption) {
             if (!\array_key_exists($requiredOption, $this->options) || $this->options[$requiredOption] === null || $this->options[$requiredOption] === '') {
                 throw TokenDecoderException::forInvalidConfiguration(\sprintf(
                     "Missing or empty required option '%s' for %s",
@@ -62,14 +62,18 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
             $header = json_decode($this->base64urlDecode($headerB64), true, 512, JSON_THROW_ON_ERROR);
 
             $kid = $header['kid'] ?? '';
-            $alg = $header['alg'] ?? '';
-
             if (empty($kid)) {
                 throw TokenDecoderException::forDecodingError('Missing kid in token header', new \Exception('kid not found'));
             }
 
-            if (empty($alg)) {
-                throw TokenDecoderException::forDecodingError('Missing alg in token header', new \Exception('alg not found'));
+            // Enforce a server-side algorithm instead of trusting the token header.
+            // Default to RS256 (commonly used by Keycloak) if not explicitly configured.
+            $algorithm = $this->options['alg'] ?? 'RS256';
+            if (isset($header['alg']) && !\hash_equals($algorithm, (string) $header['alg'])) {
+                throw TokenDecoderException::forDecodingError(
+                    \sprintf('Token algorithm "%s" does not match expected algorithm "%s"', $header['alg'], $algorithm),
+                    new \Exception('algorithm mismatch')
+                );
             }
 
             $keyPem = $this->getPemKeyForKid($kid);
