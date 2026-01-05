@@ -102,7 +102,7 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
             throw new \RuntimeException("Failed to fetch JWKS from $url");
         }
 
-        $data = json_decode($json, true);
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
         return $data['keys'] ?? [];
     }
