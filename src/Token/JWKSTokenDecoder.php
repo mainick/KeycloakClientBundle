@@ -141,7 +141,12 @@ final class JWKSTokenDecoder implements TokenDecoderInterface
 
     private function base64urlDecode(string $data): string
     {
-        return base64_decode(strtr($data, '-_', '+/'));
+        $decoded = base64_decode(strtr($data, '-_', '+/'), true);
+        if ($decoded === false) {
+            throw new \RuntimeException('Invalid base64url-encoded data.');
+        }
+
+        return $decoded;
     }
 
     private function encodeAsn1Integer(string $bytes): string
