@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('keycloak')
                     ->children()
-                        ->booleanNode('verify_ssl')->isRequired()->defaultTrue()->end()
+                        ->booleanNode('verify_ssl')->defaultTrue()->end()
                         ->scalarNode('base_url')->isRequired()->cannotBeEmpty()->end()
                         ->scalarNode('realm')->isRequired()->cannotBeEmpty()->end()
                         ->scalarNode('client_id')->isRequired()->cannotBeEmpty()->end()
