@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\UPGroup;
  */
 class UPGroupCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return UPGroup::class;

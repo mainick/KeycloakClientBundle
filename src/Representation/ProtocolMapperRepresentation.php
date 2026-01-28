@@ -8,6 +8,9 @@ use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class ProtocolMapperRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $config
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,
@@ -15,7 +18,7 @@ final class ProtocolMapperRepresentation extends Representation
         public ?string $protocolMapper = null,
         public ?bool $consentRequired = null,
         public ?string $consentText = null,
-        public ?Map $config = null
+        public ?Map $config = null,
     ) {
     }
 }

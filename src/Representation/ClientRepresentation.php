@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Representation;
 
-use Mainick\KeycloakClientBundle\DTO\ProtocolMapperRepresentationDTO;
 use Mainick\KeycloakClientBundle\Representation\Collection\ProtocolMapperCollection;
 use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class ClientRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $attributes
+     * @param ?Map<string> $registeredNodes
+     * @param ?Map<string> $access
+     * @param ?Map<string> $authenticationFlowBindingOverrides
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $clientId = null,
@@ -50,7 +55,7 @@ final class ClientRepresentation extends Representation
         /** @var string[]|null */
         public ?array $optionalClientScopes = null,
         public ?Map $access = null,
-        public ?string $origin = null
+        public ?string $origin = null,
     ) {
     }
 }

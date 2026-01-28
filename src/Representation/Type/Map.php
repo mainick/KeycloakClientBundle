@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Representation\Type;
 
-use Traversable;
-
 /**
  * @template T
  *
- * @implements \JsonSerializable<T>
+ * @implements \IteratorAggregate<string, T>
  */
-class Map extends Type implements \Countable, \IteratorAggregate
+class Map extends Type implements \Countable, \IteratorAggregate, \JsonSerializable
 {
     /**
      * @param array<string, T> $data
      */
-    public function __construct(
-        private array $data = []
-    ) {
+    public function __construct(private array $data = [])
+    {
     }
 
     /**
@@ -56,6 +53,11 @@ class Map extends Type implements \Countable, \IteratorAggregate
         return $this->data[$key];
     }
 
+    /**
+     * @param T $value
+     *
+     * @return Map<T>
+     */
     public function with(string $key, mixed $value): self
     {
         $clone = clone $this;
@@ -64,6 +66,9 @@ class Map extends Type implements \Countable, \IteratorAggregate
         return $clone;
     }
 
+    /**
+     * @return Map<T>
+     */
     public function without(string $key): self
     {
         $clone = clone $this;

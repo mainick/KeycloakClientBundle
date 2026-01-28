@@ -8,8 +8,10 @@ use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class UPAttributeSelector extends Representation
 {
-    public function __construct(
-        public ?Map $scopes = null,
-    ) {
+    /**
+     * @param ?Map<string> $scopes
+     */
+    public function __construct(public ?Map $scopes = null)
+    {
     }
 }

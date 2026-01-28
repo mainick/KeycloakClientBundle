@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\UserConsentRepresentation;
  */
 class UserConsentCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return UserConsentRepresentation::class;

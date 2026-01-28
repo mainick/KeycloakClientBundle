@@ -9,6 +9,10 @@ use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class RolesRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $client
+     * @param ?Map<string> $application
+     */
     public function __construct(
         public ?RealmCollection $realm = null,
         public ?Map $client = null,

@@ -14,11 +14,14 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/**
+ * @implements UserProviderInterface<KeycloakResourceOwner>
+ */
 class KeycloakUserProvider implements UserProviderInterface
 {
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
-        private readonly IamClientInterface $iamClient
+        private readonly IamClientInterface $iamClient,
     ) {
     }
 
@@ -30,10 +33,13 @@ class KeycloakUserProvider implements UserProviderInterface
 
         $accessToken = $user->getAccessToken();
         if (!$accessToken) {
-            $this->keycloakClientLogger->error('KeycloakUserProvider::refreshUser', [
-                'message' => 'User does not have an access token.',
-                'user_id' => $user->getUserIdentifier(),
-            ]);
+            $this->keycloakClientLogger->error(
+                'KeycloakUserProvider::refreshUser',
+                [
+                    'message' => 'User does not have an access token.',
+                    'user_id' => $user->getUserIdentifier(),
+                ],
+            );
             throw new AuthenticationException('No valid access token available. Please login again.');
         }
 
@@ -48,11 +54,14 @@ class KeycloakUserProvider implements UserProviderInterface
             return $this->loadUserByIdentifier($accessToken);
         }
         catch (\Exception $e) {
-            $this->keycloakClientLogger->error('KeycloakUserProvider::refreshUser', [
-                'error' => $e->getMessage(),
-                'message' => 'Failed to refresh user access token',
-                'user_id' => $user->getUserIdentifier(),
-            ]);
+            $this->keycloakClientLogger->error(
+                'KeycloakUserProvider::refreshUser',
+                [
+                    'error' => $e->getMessage(),
+                    'message' => 'Failed to refresh user access token',
+                    'user_id' => $user->getUserIdentifier(),
+                ],
+            );
 
             throw new AuthenticationException('Failed to refresh user session. Please login again.');
         }
@@ -63,7 +72,7 @@ class KeycloakUserProvider implements UserProviderInterface
         return KeycloakResourceOwner::class === $class;
     }
 
-    public function loadUserByIdentifier($identifier): UserInterface
+    public function loadUserByIdentifier(mixed $identifier): UserInterface
     {
         if (!$identifier instanceof AccessTokenInterface) {
             throw new \LogicException('Could not load a KeycloakUser without an AccessToken.');
@@ -72,25 +81,34 @@ class KeycloakUserProvider implements UserProviderInterface
         try {
             $resourceOwner = $this->iamClient->fetchUserFromToken($identifier);
             if (!$resourceOwner) {
-                $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
-                    'message' => 'User not found',
-                    'token' => $identifier->getToken(),
-                ]);
+                $this->keycloakClientLogger->info(
+                    'KeycloakUserProvider::loadUserByIdentifier',
+                    [
+                        'message' => 'User not found',
+                        'token' => $identifier->getToken(),
+                    ],
+                );
                 throw new UserNotFoundException('User not found or invalid token.');
             }
 
-            $this->keycloakClientLogger->info('KeycloakUserProvider::loadUserByIdentifier', [
-                'resourceOwner' => $resourceOwner->toArray(),
-            ]);
+            $this->keycloakClientLogger->info(
+                'KeycloakUserProvider::loadUserByIdentifier',
+                [
+                    'resourceOwner' => $resourceOwner->toArray(),
+                ],
+            );
 
             return $resourceOwner;
         }
         catch (\UnexpectedValueException $e) {
-            $this->keycloakClientLogger->warning('KeycloakUserProvider::loadUserByIdentifier', [
-                'error' => $e->getMessage(),
-                'message' => 'User should have been disconnected from Keycloak server',
-                'token' => $identifier->getToken(),
-            ]);
+            $this->keycloakClientLogger->warning(
+                'KeycloakUserProvider::loadUserByIdentifier',
+                [
+                    'error' => $e->getMessage(),
+                    'message' => 'User should have been disconnected from Keycloak server',
+                    'token' => $identifier->getToken(),
+                ],
+            );
 
             throw new UserNotFoundException('Failed to load user from token.');
         }

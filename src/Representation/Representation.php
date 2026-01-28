@@ -12,8 +12,8 @@ abstract class Representation implements \JsonSerializable
     abstract public function __construct();
 
     /**
-     * @param array $properties
-     * @return static
+     * @param array<string, mixed> $properties
+     *
      * @throws PropertyDoesNotExistException
      */
     final public static function from(array $properties): static
@@ -27,24 +27,30 @@ abstract class Representation implements \JsonSerializable
     }
 
     /**
-     * @param string $json
-     * @return static
      * @throws PropertyDoesNotExistException
      */
     public static function fromJson(string $json): static
     {
-        return static::from((new JsonEncoder())->decode($json, JsonEncoder::FORMAT));
+        return static::from(
+            new JsonEncoder()->decode($json, JsonEncoder::FORMAT),
+        );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     final public function jsonSerialize(): array
     {
         $serializable = [];
-        $reflectedClass = (new \ReflectionClass($this));
-        $properties = $reflectedClass->getProperties(\ReflectionProperty::IS_PUBLIC);
+        $reflectedClass = new \ReflectionClass($this);
+        $properties = $reflectedClass->getProperties(
+            \ReflectionProperty::IS_PUBLIC,
+        );
         foreach ($properties as $property) {
-            $serializable[$property->getName()] = ($property->getValue($this) instanceof \JsonSerializable)
-                ? $property->getValue($this)->jsonSerialize()
-                : $property->getValue($this);
+            $serializable[$property->getName()] =
+                $property->getValue($this) instanceof \JsonSerializable
+                    ? $property->getValue($this)->jsonSerialize()
+                    : $property->getValue($this);
         }
 
         return $serializable;

@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 {
     /**
-     * Raw response.
+     * @var array<string, mixed>
      */
     protected array $response;
 
@@ -19,9 +19,13 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
     /**
      * Creates new resource owner.
+     *
+     * @param array<string, mixed> $response
      */
-    public function __construct(array $response = [], ?AccessTokenInterface $accessToken = null)
-    {
+    public function __construct(
+        array $response = [],
+        ?AccessTokenInterface $accessToken = null,
+    ) {
         $this->response = $response;
         $this->accessToken = $accessToken;
     }
@@ -93,6 +97,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      * Get client roles.
      *
      * @param string|null $client_id Optional client ID to filter roles
+     *
      * @return array<string>
      */
     private function getClientRoles(?string $client_id = null): array
@@ -100,18 +105,18 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
         $resource_access = $this->response['resource_access'] ?? [];
 
         // If client_id is provided, return only roles for that client
-        if ($client_id !== null) {
+        if (null !== $client_id) {
             return $resource_access[$client_id]['roles'] ?? [];
         }
 
         // Otherwise, collect all roles from all clients
         return array_reduce(
             $resource_access,
-            static fn(array $carry, array $client): array => [
+            static fn (array $carry, array $client): array => [
                 ...$carry,
-                ...($client['roles'] ?? [])
+                ...$client['roles'] ?? [],
             ],
-            []
+            [],
         );
     }
 
@@ -122,7 +127,10 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      */
     public function getRoles(?string $client_id = null): array
     {
-        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
+        return [
+            ...$this->getRealmRoles(),
+            ...$this->getClientRoles($client_id),
+        ];
     }
 
     /**

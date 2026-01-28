@@ -63,11 +63,13 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         $jwtToken = $request->headers->get('X-Auth-Token');
         if (!$jwtToken) {
             $this->setUnauthorizedResponse($requestEvent, 'Token not found');
+
             return;
         }
 
         if (!$this->validateToken($jwtToken, $request)) {
             $this->setUnauthorizedResponse($requestEvent, 'Token not valid');
+
             return;
         }
     }
@@ -78,8 +80,8 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
             return false;
         }
 
-        return in_array($route, self::EXCLUDED_ROUTES, true) ||
-            !empty(array_filter(self::EXCLUDED_ROUTES_PREFIX, static fn (string $prefix): bool => str_starts_with($route, $prefix)));
+        return in_array($route, self::EXCLUDED_ROUTES, true)
+            || !empty(array_filter(self::EXCLUDED_ROUTES_PREFIX, static fn (string $prefix): bool => str_starts_with($route, $prefix)));
     }
 
     private function shouldSkipControllerValidation(mixed $controller): bool
@@ -101,7 +103,7 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         if (is_string($controller)) {
             // Check if "Controller::method" or "Controller:method" format
             $parts = preg_split('/:{1,2}/', $controller);
-            if (count($parts) === 2) {
+            if (2 === count($parts)) {
                 $controllerClass = $parts[0];
                 $controllerMethod = $parts[1];
             }
@@ -118,6 +120,7 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
 
         try {
             $reflectionMethod = new \ReflectionMethod($controllerClass, $controllerMethod);
+
             return !empty($reflectionMethod->getAttributes(ExcludeTokenValidationAttribute::class));
         }
         catch (\ReflectionException) {
@@ -134,6 +137,7 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         $userInfo = $this->iamClient->userInfo($token);
         if ($userInfo) {
             $request->attributes->set('user', $userInfo);
+
             return true;
         }
 

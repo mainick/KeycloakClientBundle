@@ -9,13 +9,16 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class MapNormalizer implements NormalizerInterface
 {
-
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
+     *
+     * @return \ArrayObject<string, mixed>
      */
-    public function normalize(mixed $data, ?string $format = null, array $context = []): \ArrayObject
-    {
+    public function normalize(
+        mixed $data,
+        ?string $format = null,
+        array $context = [],
+    ): \ArrayObject {
         if (!$data instanceof Map) {
             throw new \InvalidArgumentException('Data must be an instance of Map.');
         }
@@ -24,21 +27,20 @@ final class MapNormalizer implements NormalizerInterface
     }
 
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
      */
-    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
-    {
+    public function supportsNormalization(
+        mixed $data,
+        ?string $format = null,
+        array $context = [],
+    ): bool {
         return $data instanceof Map;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupportedTypes(?string $format): array
     {
         return [
-            Map::class => true
+            Map::class => true,
         ];
     }
 }

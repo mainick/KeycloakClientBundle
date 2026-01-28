@@ -16,7 +16,7 @@ final class KeycloakController extends AbstractController
 {
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
-        private readonly IamClientInterface $iamClient
+        private readonly IamClientInterface $iamClient,
     ) {
     }
 

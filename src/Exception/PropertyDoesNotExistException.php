@@ -6,5 +6,4 @@ namespace Mainick\KeycloakClientBundle\Exception;
 
 class PropertyDoesNotExistException extends \Exception
 {
-
 }

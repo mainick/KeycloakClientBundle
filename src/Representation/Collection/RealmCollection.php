@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
  */
 class RealmCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return RealmRepresentation::class;

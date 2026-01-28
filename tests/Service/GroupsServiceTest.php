@@ -15,7 +15,6 @@ use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
 use Mainick\KeycloakClientBundle\Service\GroupsService;
-use Mainick\KeycloakClientBundle\Service\HttpMethodEnum;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -43,11 +42,19 @@ class GroupsServiceTest extends TestCase
         $this->serializer = m::mock(Serializer::class);
 
         $keycloakProvider = m::mock(Keycloak::class);
-        $keycloakProvider->shouldReceive('getHttpClient')->andReturn($this->httpClient);
+        $keycloakProvider
+            ->shouldReceive('getHttpClient')
+            ->andReturn($this->httpClient);
 
-        $this->keycloakAdminClient->shouldReceive('getKeycloakProvider')->andReturn($keycloakProvider);
-        $this->keycloakAdminClient->shouldReceive('getBaseUrl')->andReturn('http://mock.url/auth');
-        $this->keycloakAdminClient->shouldReceive('getVersion')->andReturn('17.0.1');
+        $this->keycloakAdminClient
+            ->shouldReceive('getKeycloakProvider')
+            ->andReturn($keycloakProvider);
+        $this->keycloakAdminClient
+            ->shouldReceive('getBaseUrl')
+            ->andReturn('http://mock.url/auth');
+        $this->keycloakAdminClient
+            ->shouldReceive('getVersion')
+            ->andReturn('17.0.1');
 
         $this->adminAccessToken = new AccessToken();
         $this->adminAccessToken
@@ -56,11 +63,13 @@ class GroupsServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
-        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+        $this->keycloakAdminClient
+            ->shouldReceive('getAdminAccessToken')
+            ->andReturn($this->adminAccessToken);
 
         $this->groupsService = new GroupsService(
             $this->logger,
-            $this->keycloakAdminClient
+            $this->keycloakAdminClient,
         );
 
         $reflection = new \ReflectionClass($this->groupsService);
@@ -79,7 +88,8 @@ class GroupsServiceTest extends TestCase
     {
         // given
         $realm = 'test-realm';
-        $responseBody = '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
+        $responseBody =
+            '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -89,10 +99,15 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups', m::on(function($options) {
-                return isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
-            }))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups',
+                m::on(function ($options) {
+                    return isset($options['headers']['Authorization'])
+                        && 'Bearer mock_token' ===
+                            $options['headers']['Authorization'];
+                }),
+            )
             ->andReturn($response);
 
         $groupCollection = new GroupCollection();
@@ -128,7 +143,8 @@ class GroupsServiceTest extends TestCase
         // given
         $criteria = new Criteria(['briefRepresentation' => 'true']);
         $realm = 'test-realm';
-        $responseBody = '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
+        $responseBody =
+            '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -138,7 +154,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups?briefRepresentation=true', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups?briefRepresentation=true',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $groupCollection = new GroupCollection();
@@ -183,7 +203,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/count', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups/count',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $this->serializer
@@ -197,6 +221,7 @@ class GroupsServiceTest extends TestCase
         $result = $this->groupsService->count($realm);
 
         // then
+        // @phpstan-ignore method.alreadyNarrowedType
         $this->assertIsInt($result);
         $this->assertEquals(2, $result);
     }
@@ -206,7 +231,8 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $groupId = 'parent-group';
-        $responseBody = '[{"id":"child1","name":"child1"},{"id":"child2","name":"child2"}]';
+        $responseBody =
+            '[{"id":"child1","name":"child1"},{"id":"child2","name":"child2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -216,7 +242,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/children', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups/'.$groupId.'/children',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $groupCollection = new GroupCollection();
@@ -262,7 +292,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId, m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups/'.$groupId,
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $group = new GroupRepresentation();
@@ -305,9 +339,13 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups', m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'POST',
+                'admin/realms/'.$realm.'/groups',
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
@@ -337,15 +375,27 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$parentGroupId.'/children', m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'POST',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $parentGroupId.
+                    '/children',
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->createChild($realm, $parentGroupId, $group);
+        $result = $this->groupsService->createChild(
+            $realm,
+            $parentGroupId,
+            $group,
+        );
 
         // then
         $this->assertTrue($result);
@@ -370,9 +420,13 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('PUT', 'admin/realms/'.$realm.'/groups/'.$groupId, m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'PUT',
+                'admin/realms/'.$realm.'/groups/'.$groupId,
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
@@ -399,7 +453,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId, m::type('array'))
+            ->with(
+                'DELETE',
+                'admin/realms/'.$realm.'/groups/'.$groupId,
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
@@ -416,7 +474,8 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $groupId = 'group1';
-        $responseBody = '[{"id":"user1","username":"user1"},{"id":"user2","username":"user2"}]';
+        $responseBody =
+            '[{"id":"user1","username":"user1"},{"id":"user2","username":"user2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -426,7 +485,11 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/members', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.$realm.'/groups/'.$groupId.'/members',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $userCollection = new UserCollection();
@@ -462,7 +525,8 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $groupId = 'group1';
-        $responseBody = '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
+        $responseBody =
+            '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -472,7 +536,15 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/realm',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $roleCollection = new RoleCollection();
@@ -508,7 +580,8 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $groupId = 'group1';
-        $responseBody = '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
+        $responseBody =
+            '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -518,7 +591,15 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm/available', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/realm/available',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $roleCollection = new RoleCollection();
@@ -568,9 +649,17 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'POST',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/realm',
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
@@ -601,15 +690,27 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'DELETE',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/realm',
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->removeRealmRole($realm, $groupId, $role);
+        $result = $this->groupsService->removeRealmRole(
+            $realm,
+            $groupId,
+            $role,
+        );
 
         // then
         $this->assertTrue($result);
@@ -621,7 +722,8 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $clientUuid = 'client1';
         $groupId = 'group1';
-        $responseBody = '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
+        $responseBody =
+            '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -631,7 +733,16 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/clients/'.
+                    $clientUuid,
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $roleCollection = new RoleCollection();
@@ -652,7 +763,11 @@ class GroupsServiceTest extends TestCase
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->clientRoles($realm, $clientUuid, $groupId);
+        $result = $this->groupsService->clientRoles(
+            $realm,
+            $clientUuid,
+            $groupId,
+        );
 
         // then
         $this->assertInstanceOf(RoleCollection::class, $result);
@@ -668,7 +783,8 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $clientUuid = 'client1';
         $groupId = 'group1';
-        $responseBody = '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
+        $responseBody =
+            '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
         $stream = $this->createMock(StreamInterface::class);
         $stream->method('getContents')->willReturn($responseBody);
 
@@ -678,7 +794,17 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid.'/available', m::type('array'))
+            ->with(
+                'GET',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/clients/'.
+                    $clientUuid.
+                    '/available',
+                m::type('array'),
+            )
             ->andReturn($response);
 
         $roleCollection = new RoleCollection();
@@ -699,7 +825,11 @@ class GroupsServiceTest extends TestCase
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->availableClientRoles($realm, $clientUuid, $groupId);
+        $result = $this->groupsService->availableClientRoles(
+            $realm,
+            $clientUuid,
+            $groupId,
+        );
 
         // then
         $this->assertInstanceOf(RoleCollection::class, $result);
@@ -729,15 +859,29 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'POST',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/clients/'.
+                    $clientUuid,
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->addClientRole($realm, $clientUuid, $groupId, $role);
+        $result = $this->groupsService->addClientRole(
+            $realm,
+            $clientUuid,
+            $groupId,
+            $role,
+        );
 
         // then
         $this->assertTrue($result);
@@ -763,15 +907,29 @@ class GroupsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::on(function($options) {
-                return isset($options['json']);
-            }))
+            ->with(
+                'DELETE',
+                'admin/realms/'.
+                    $realm.
+                    '/groups/'.
+                    $groupId.
+                    '/role-mappings/clients/'.
+                    $clientUuid,
+                m::on(function ($options) {
+                    return isset($options['json']);
+                }),
+            )
             ->andReturn($response);
 
         $this->logger->shouldReceive('info')->once();
 
         // when
-        $result = $this->groupsService->removeClientRole($realm, $clientUuid, $groupId, $role);
+        $result = $this->groupsService->removeClientRole(
+            $realm,
+            $clientUuid,
+            $groupId,
+            $role,
+        );
 
         // then
         $this->assertTrue($result);

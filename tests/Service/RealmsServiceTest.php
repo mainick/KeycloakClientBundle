@@ -83,9 +83,9 @@ class RealmsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms', m::on(function($options) {
-                return isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
+            ->with('GET', 'admin/realms', m::on(function ($options) {
+                return isset($options['headers']['Authorization'])
+                       && 'Bearer mock_token' === $options['headers']['Authorization'];
             }))
             ->andReturn($response);
 
@@ -213,7 +213,7 @@ class RealmsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/', m::on(function($options) {
+            ->with('POST', 'admin/realms/', m::on(function ($options) {
                 return isset($options['json']);
             }))
             ->andReturn($response);
@@ -244,7 +244,7 @@ class RealmsServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('PUT', 'admin/realms/test', m::on(function($options) {
+            ->with('PUT', 'admin/realms/test', m::on(function ($options) {
                 return isset($options['json']);
             }))
             ->andReturn($response);

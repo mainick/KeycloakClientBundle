@@ -29,14 +29,14 @@ class CollectionDenormalizerTest extends TestCase
                 'id' => '1',
                 'realm' => 'master',
                 'displayName' => 'Master Realm',
-                'enabled' => true
+                'enabled' => true,
             ],
             [
                 'id' => '2',
                 'realm' => 'test',
                 'displayName' => 'Test Realm',
-                'enabled' => false
-            ]
+                'enabled' => false,
+            ],
         ];
 
         $realm1 = new RealmRepresentation(
@@ -56,9 +56,10 @@ class CollectionDenormalizerTest extends TestCase
         $innerDenormalizer->expects($this->exactly(2))
             ->method('denormalize')
             ->willReturnCallback(function ($data, $type, $format, $context) use ($realm1, $realm2) {
-                if ($data['id'] === '1') {
+                if ('1' === $data['id']) {
                     return $realm1;
                 }
+
                 return $realm2;
             });
 
@@ -99,14 +100,14 @@ class CollectionDenormalizerTest extends TestCase
                 'id' => '1',
                 'realm' => 'master',
                 'displayName' => 'Master Realm',
-                'enabled' => true
+                'enabled' => true,
             ],
             [
                 'id' => '2',
                 'realm' => 'test',
                 'displayName' => 'Test Realm',
-                'enabled' => false
-            ]
+                'enabled' => false,
+            ],
         ];
 
         // Esecuzione

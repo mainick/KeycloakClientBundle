@@ -8,6 +8,7 @@ use GuzzleHttp\ClientInterface as HttpClientInterface;
 use Mainick\KeycloakClientBundle\Exception\KeycloakAuthenticationException;
 use Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient;
 use Mainick\KeycloakClientBundle\Representation\Collection\Collection;
+use Mainick\KeycloakClientBundle\Representation\Collection\RoleCollection;
 use Mainick\KeycloakClientBundle\Representation\Representation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
@@ -25,21 +26,28 @@ abstract class Service
         protected readonly LoggerInterface $logger,
         protected readonly KeycloakAdminClient $keycloakAdminClient,
     ) {
-        $this->httpClient = $this->keycloakAdminClient->getKeycloakProvider()->getHttpClient();
+        $this->httpClient = $this->keycloakAdminClient
+            ->getKeycloakProvider()
+            ->getHttpClient();
 
-        $this->serializer = new Serializer($this->keycloakAdminClient->getVersion());
+        $this->serializer = new Serializer(
+            $this->keycloakAdminClient->getVersion(),
+        );
     }
 
-    protected function executeQuery(string $path, string $returnType, ?Criteria $criteria = null): mixed
-    {
+    protected function executeQuery(
+        string $path,
+        string $returnType,
+        ?Criteria $criteria = null,
+    ): mixed {
         if (!$this->isAuthorized()) {
             $this->inizializeAdminAccessToken();
         }
 
         $response = $this->httpClient->request(
             HttpMethodEnum::GET->value,
-            $path . $this->getQueryParams($criteria),
-            $this->defaultOptions()
+            $path.$this->getQueryParams($criteria),
+            $this->defaultOptions(),
         );
 
         if ($this->isSuccessful($response->getStatusCode())) {
@@ -51,12 +59,14 @@ abstract class Service
                 'response' => $content,
             ]);
 
-            if ($content === '' || trim($content) === '') {
+            if ('' === $content || '' === trim($content)) {
                 throw new \UnexpectedValueException('Empty response');
             }
 
-            if ($returnType === 'array') {
-                return (new JsonDecode([JsonDecode::ASSOCIATIVE => true]))->decode($content, JsonEncoder::FORMAT);
+            if ('array' === $returnType) {
+                return new JsonDecode([
+                    JsonDecode::ASSOCIATIVE => true,
+                ])->decode($content, JsonEncoder::FORMAT);
             }
 
             return $this->serializer->deserialize($content, $returnType);
@@ -65,34 +75,38 @@ abstract class Service
         return null;
     }
 
+    /**
+     * @param Representation|Collection<Representation>|RoleCollection|array<string, mixed>|null $payload
+     */
     protected function executeCommand(
         HttpMethodEnum $method,
         string $path,
-        Representation|Collection|array|null $payload = null
-    ): bool
-    {
+        Representation|Collection|RoleCollection|array|null $payload = null,
+    ): bool {
         if (!$this->isAuthorized()) {
             $this->inizializeAdminAccessToken();
         }
 
         $options = $this->defaultOptions();
         if (null !== $payload) {
-            $options['json'] = $payload instanceof \JsonSerializable ? $payload->jsonSerialize() : $payload;
+            $options['json'] =
+                $payload instanceof \JsonSerializable
+                    ? $payload->jsonSerialize()
+                    : $payload;
         }
 
-        $response = $this->httpClient->request(
-            $method->value,
-            $path,
-            $options
-        );
+        $response = $this->httpClient->request($method->value, $path, $options);
 
         if ($this->isSuccessful($response->getStatusCode())) {
             $content = $response->getBody()->getContents();
 
-            $this->logger->info('KeycloakAdminClient::Service::executeCommand', [
-                'status_code' => $response->getStatusCode(),
-                'response' => $content,
-            ]);
+            $this->logger->info(
+                'KeycloakAdminClient::Service::executeCommand',
+                [
+                    'status_code' => $response->getStatusCode(),
+                    'response' => $content,
+                ],
+            );
 
             return true;
         }
@@ -100,6 +114,9 @@ abstract class Service
         return false;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function defaultOptions(): array
     {
         return [
@@ -107,7 +124,10 @@ abstract class Service
             'headers' => [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer '.$this->keycloakAdminClient->getAdminAccessToken()?->getToken(),
+                'Authorization' => 'Bearer '.
+                    $this->keycloakAdminClient
+                        ->getAdminAccessToken()
+                        ?->getToken(),
             ],
         ];
     }
@@ -118,17 +138,21 @@ abstract class Service
             return '';
         }
 
-        return '?' . http_build_query($criteria->jsonSerialize());
+        return '?'.http_build_query($criteria->jsonSerialize());
     }
 
-    private function isSuccessful($statusCode): bool
+    private function isSuccessful(int $statusCode): bool
     {
-        return ($statusCode >= Response::HTTP_OK && $statusCode < Response::HTTP_MULTIPLE_CHOICES) || $statusCode === Response::HTTP_NOT_MODIFIED;
+        return ($statusCode >= Response::HTTP_OK
+            && $statusCode < Response::HTTP_MULTIPLE_CHOICES)
+            || Response::HTTP_NOT_MODIFIED === $statusCode;
     }
 
     private function isAuthorized(): bool
     {
-        return null !== $this->keycloakAdminClient->getAdminAccessToken() && false === $this->keycloakAdminClient->getAdminAccessToken()->hasExpired();
+        return null !== $this->keycloakAdminClient->getAdminAccessToken()
+            && false ===
+                $this->keycloakAdminClient->getAdminAccessToken()->hasExpired();
     }
 
     private function inizializeAdminAccessToken(): void
@@ -138,21 +162,33 @@ abstract class Service
                 throw new KeycloakAuthenticationException('No refresh token available');
             }
 
-            $token = $this->keycloakAdminClient->getKeycloakProvider()->getAccessToken('refresh_token', [
-                'refresh_token' => $this->keycloakAdminClient->getAdminAccessToken()->getRefreshToken(),
-            ]);
+            $token = $this->keycloakAdminClient
+                ->getKeycloakProvider()
+                ->getAccessToken('refresh_token', [
+                    'refresh_token' => $this->keycloakAdminClient
+                        ->getAdminAccessToken()
+                        ->getRefreshToken(),
+                ]);
         }
         catch (\Exception $e) {
             try {
-                $token = $this->keycloakAdminClient->getKeycloakProvider()->getAccessToken('password', [
-                    'username' => $this->keycloakAdminClient->getUsername(),
-                    'password' => $this->keycloakAdminClient->getPassword(),
-                ]);
+                $token = $this->keycloakAdminClient
+                    ->getKeycloakProvider()
+                    ->getAccessToken('password', [
+                        'username' => $this->keycloakAdminClient->getUsername(),
+                        'password' => $this->keycloakAdminClient->getPassword(),
+                    ]);
             }
             catch (\Exception $e) {
-                $this->logger->error('KeycloakAdminClient::getAdminAccessToken', [
-                    'error' => 'Authentication failed to Keycloak Admin API - '.$e->getMessage().' - '.$e->getTraceAsString(),
-                ]);
+                $this->logger->error(
+                    'KeycloakAdminClient::getAdminAccessToken',
+                    [
+                        'error' => 'Authentication failed to Keycloak Admin API - '.
+                            $e->getMessage().
+                            ' - '.
+                            $e->getTraceAsString(),
+                    ],
+                );
 
                 throw new KeycloakAuthenticationException('Authentication failed to Keycloak Admin API');
             }

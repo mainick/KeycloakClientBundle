@@ -88,9 +88,9 @@ class RolesServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/roles', m::on(function($options) {
-                return isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
+            ->with('GET', 'admin/realms/'.$realm.'/roles', m::on(function ($options) {
+                return isset($options['headers']['Authorization'])
+                       && 'Bearer mock_token' === $options['headers']['Authorization'];
             }))
             ->andReturn($response);
 
@@ -227,7 +227,7 @@ class RolesServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/roles', m::on(function($options) {
+            ->with('POST', 'admin/realms/'.$realm.'/roles', m::on(function ($options) {
                 return isset($options['json']);
             }))
             ->andReturn($response);
@@ -260,7 +260,7 @@ class RolesServiceTest extends TestCase
 
         $this->httpClient
             ->shouldReceive('request')
-            ->with('PUT', 'admin/realms/'.$realm.'/roles/'.$roleName, m::on(function($options) {
+            ->with('PUT', 'admin/realms/'.$realm.'/roles/'.$roleName, m::on(function ($options) {
                 return isset($options['json']);
             }))
             ->andReturn($response);

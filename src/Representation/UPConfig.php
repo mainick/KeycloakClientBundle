@@ -6,7 +6,6 @@ namespace Mainick\KeycloakClientBundle\Representation;
 
 use Mainick\KeycloakClientBundle\Representation\Collection\UPAttributeCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\UPGroupCollection;
-use Mainick\KeycloakClientBundle\Representation\Representation;
 
 final class UPConfig extends Representation
 {

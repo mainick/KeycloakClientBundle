@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Representation;
 
 use Mainick\KeycloakClientBundle\Representation\Collection\ProtocolMapperCollection;
-use Mainick\KeycloakClientBundle\Representation\Representation;
 use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class ClientScopeRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $attributes
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,

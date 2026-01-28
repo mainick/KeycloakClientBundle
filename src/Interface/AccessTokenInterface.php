@@ -47,11 +47,15 @@ interface AccessTokenInterface extends \JsonSerializable
 
     /**
      * Returns additional vendor values stored in the token.
+     *
+     * @return array<string, mixed>
      */
     public function getValues(): array;
 
     /**
      * Sets additional vendor values stored in the token.
+     *
+     * @param array<string, mixed> $values
      */
     public function setValues(array $values): self;
 
@@ -63,6 +67,8 @@ interface AccessTokenInterface extends \JsonSerializable
     /**
      * Returns an array of parameters to serialize when this is serialized with
      * json_encode().
+     *
+     * @return array<string, mixed>
      */
     public function jsonSerialize(): array;
 }

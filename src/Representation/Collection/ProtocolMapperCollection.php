@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\ProtocolMapperRepresentation;
  */
 class ProtocolMapperCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return ProtocolMapperRepresentation::class;

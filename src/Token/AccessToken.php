@@ -11,6 +11,7 @@ class AccessToken implements AccessTokenInterface
     protected string $accessToken;
     protected int $expires;
     protected string $refreshToken;
+    /** @var array<string, mixed> */
     protected array $values = [];
 
     public function __construct()
@@ -63,11 +64,21 @@ class AccessToken implements AccessTokenInterface
         return $expires < time();
     }
 
+    /**
+     * Returns the token values as an array.
+     *
+     * @return array<string, mixed>
+     */
     public function getValues(): array
     {
         return $this->values;
     }
 
+    /**
+     * Sets the token values from an array.
+     *
+     * @param array<string, mixed> $values
+     */
     public function setValues(array $values): AccessTokenInterface
     {
         $this->values = $values;
@@ -80,6 +91,11 @@ class AccessToken implements AccessTokenInterface
         return (string) $this->getToken();
     }
 
+    /**
+     * Returns the token values as an array.
+     *
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
         $parameters = $this->values;

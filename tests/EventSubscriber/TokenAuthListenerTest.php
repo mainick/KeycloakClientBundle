@@ -26,7 +26,9 @@ class MyController
     #[ExcludeTokenValidationAttribute]
     public function excludedRouteAction(): Response
     {
-        return new Response('Excluded route', Response::HTTP_OK, ['Content-Type' => 'text/plain']);
+        return new Response('Excluded route', Response::HTTP_OK, [
+            'Content-Type' => 'text/plain',
+        ]);
     }
 }
 
@@ -35,64 +37,64 @@ class TokenAuthListenerTest extends TestCase
     use QueryBuilderTrait;
 
     public const ENCRYPTION_KEY = <<<EOD
------BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8kGa1pSjbSYZVebtTRBLxBz5H
-4i2p/llLCrEeQhta5kaQu/RnvuER4W8oDH3+3iuIYW4VQAzyqFpwuzjkDI+17t5t
-0tyazyZ8JXw+KgXTxldMPEL95+qVhgXvwtihXC1c5oGbRlEDvDF6Sa53rcFVsYJ4
-ehde/zUxo6UvS7UrBQIDAQAB
------END PUBLIC KEY-----
-EOD;
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8kGa1pSjbSYZVebtTRBLxBz5H
+    4i2p/llLCrEeQhta5kaQu/RnvuER4W8oDH3+3iuIYW4VQAzyqFpwuzjkDI+17t5t
+    0tyazyZ8JXw+KgXTxldMPEL95+qVhgXvwtihXC1c5oGbRlEDvDF6Sa53rcFVsYJ4
+    ehde/zUxo6UvS7UrBQIDAQAB
+    -----END PUBLIC KEY-----
+    EOD;
 
     public const ENCRYPTION_ALGORITHM = 'HS256';
 
-    private $jwtTemplate = <<<EOF
-{
-  "exp": "%s",
-  "iat": "%s",
-  "jti": "e11a85c8-aa91-4f75-9088-57db4586f8b9",
-  "iss": "https://example.org/auth/realms/test-realm",
-  "aud": "account",
-  "nbf": "%s",
-  "sub": "4332085e-b944-4acc-9eb1-27d8f5405f3e",
-  "typ": "Bearer",
-  "azp": "test-app",
-  "session_state": "c90c8e0d-aabb-4c71-b8a8-e88792cacd96",
-  "acr": "1",
-  "realm_access": {
-    "roles": [
-      "default-roles-test-realm",
-      "offline_access",
-      "uma_authorization"
-    ]
-  },
-  "resource_access": {
-    "account": {
-      "roles": [
-        "manage-account",
-        "manage-account-links",
-        "view-profile"
-      ]
-    },
-    "test-app": {
-      "roles": [
-        "test-app-role-user"
-      ]
+    private string $jwtTemplate = <<<EOF
+    {
+      "exp": "%s",
+      "iat": "%s",
+      "jti": "e11a85c8-aa91-4f75-9088-57db4586f8b9",
+      "iss": "https://example.org/auth/realms/test-realm",
+      "aud": "account",
+      "nbf": "%s",
+      "sub": "4332085e-b944-4acc-9eb1-27d8f5405f3e",
+      "typ": "Bearer",
+      "azp": "test-app",
+      "session_state": "c90c8e0d-aabb-4c71-b8a8-e88792cacd96",
+      "acr": "1",
+      "realm_access": {
+        "roles": [
+          "default-roles-test-realm",
+          "offline_access",
+          "uma_authorization"
+        ]
+      },
+      "resource_access": {
+        "account": {
+          "roles": [
+            "manage-account",
+            "manage-account-links",
+            "view-profile"
+          ]
+        },
+        "test-app": {
+          "roles": [
+            "test-app-role-user"
+          ]
+        }
+      },
+      "scope": "openid email profile",
+      "groups": [
+        "test-app-group-user"
+      ],
+      "sid": "c90c8e0d-aabb-4c71-b8a8-e88792cacd96",
+      "address": {},
+      "email_verified": true,
+      "name": "Test User",
+      "preferred_username": "test-user",
+      "given_name": "Test",
+      "family_name": "User",
+      "email": "test-user@example.org"
     }
-  },
-  "scope": "openid email profile",
-  "groups": [
-    "test-app-group-user"
-  ],
-  "sid": "c90c8e0d-aabb-4c71-b8a8-e88792cacd96",
-  "address": {},
-  "email_verified": true,
-  "name": "Test User",
-  "preferred_username": "test-user",
-  "given_name": "Test",
-  "family_name": "User",
-  "email": "test-user@example.org"
-}
-EOF;
+    EOF;
 
     protected KeycloakClient $keycloakClient;
     protected string $access_token;
@@ -111,7 +113,11 @@ EOF;
         );
 
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
-        $this->access_token = JWT::encode(json_decode($jwt_tmp, true), self::ENCRYPTION_KEY, self::ENCRYPTION_ALGORITHM);
+        $this->access_token = JWT::encode(
+            json_decode($jwt_tmp, true),
+            self::ENCRYPTION_KEY,
+            self::ENCRYPTION_ALGORITHM,
+        );
     }
 
     protected function tearDown(): void
@@ -127,7 +133,11 @@ EOF;
         $getAccessTokenStream = $this->createMock(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
-            ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
+            ->willReturn(
+                '{"access_token":"'.
+                    $this->access_token.
+                    '","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}',
+            );
         $getAccessTokenResponse = m::mock(ResponseInterface::class);
         $getAccessTokenResponse
             ->allows('getBody')
@@ -139,9 +149,7 @@ EOF;
         // mock resource owner
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
         $getResourceOwnerStream = $this->createMock(StreamInterface::class);
-        $getResourceOwnerStream
-            ->method('__toString')
-            ->willReturn($jwt_tmp);
+        $getResourceOwnerStream->method('__toString')->willReturn($jwt_tmp);
         $getResourceOwnerResponse = m::mock(ResponseInterface::class);
         $getResourceOwnerResponse
             ->allows('getBody')
@@ -158,17 +166,23 @@ EOF;
         $this->keycloakClient->setHttpClient($client);
 
         // when
-        $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
+        $token = $this->keycloakClient->authenticate(
+            'mock_user',
+            'mock_password',
+        );
 
         // mock event request
         $logger = $this->createMock(LoggerInterface::class);
-        $tokenAuthListener = new TokenAuthListener($logger, $this->keycloakClient);
+        $tokenAuthListener = new TokenAuthListener(
+            $logger,
+            $this->keycloakClient,
+        );
         $request = new Request();
         $request->headers->set('X-Auth-Token', $token->getToken());
         $eventRequest = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
-            HttpKernelInterface::MAIN_REQUEST
+            HttpKernelInterface::MAIN_REQUEST,
         );
 
         // call checkValidToken
@@ -188,18 +202,22 @@ EOF;
 
         // when
         // Create a mock controller method with ExcludeTokenValidationAttribute
-        $controllerMethodWithAttribute = 'Mainick\KeycloakClientBundle\Tests\EventSubscriber\MyController::excludedRouteAction';
+        $controllerMethodWithAttribute =
+            "Mainick\KeycloakClientBundle\Tests\EventSubscriber\MyController::excludedRouteAction";
 
         // Mock the request for a route with ExcludeTokenValidationAttribute
         $request = new Request();
-        $request->attributes->set('_controller', $controllerMethodWithAttribute);
+        $request->attributes->set(
+            '_controller',
+            $controllerMethodWithAttribute,
+        );
         $request->headers->set('X-Auth-Token', $this->access_token);
 
         // Mock the Event
         $eventRequest = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
             $request,
-            HttpKernelInterface::MAIN_REQUEST
+            HttpKernelInterface::MAIN_REQUEST,
         );
 
         // call checkValidToken

@@ -13,8 +13,12 @@ class TokenDecoderFactory
     public const ALGORITHM_HS256 = 'HS256';
     public const ALGORITHM_JWKS = 'JWKS';
 
-    public static function create(string $algorithm, ClientInterface $httpClient, array $options = []): TokenDecoderInterface
-    {
+    /** @param array<string, mixed> $options */
+    public static function create(
+        string $algorithm,
+        ClientInterface $httpClient,
+        array $options = [],
+    ): TokenDecoderInterface {
         return match ($algorithm) {
             self::ALGORITHM_RS256 => new RS256TokenDecoder(),
             self::ALGORITHM_HS256 => new HS256TokenDecoder(),

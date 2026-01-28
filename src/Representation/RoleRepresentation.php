@@ -8,6 +8,9 @@ use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class RoleRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $attributes
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,

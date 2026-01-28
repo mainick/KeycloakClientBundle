@@ -40,6 +40,8 @@ interface ResourceOwnerInterface
 
     /**
      * Return all of the owner details available as an array.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Security\Authenticator;
 
+use GuzzleHttp\Exception\ClientException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Mainick\KeycloakClientBundle\DTO\KeycloakAuthorizationCodeEnum;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
@@ -25,24 +26,31 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
         private readonly IamClientInterface $iamClient,
-        private readonly KeycloakUserProvider $userProvider
+        private readonly KeycloakUserProvider $userProvider,
     ) {
     }
 
     public function supports(Request $request): ?bool
     {
-        return 'mainick_keycloak_security_auth_connect_check' === $request->attributes->get('_route');
+        return 'mainick_keycloak_security_auth_connect_check' ===
+            $request->attributes->get('_route');
     }
 
     public function authenticate(Request $request): Passport
     {
-        $queryState = $request->query->get(KeycloakAuthorizationCodeEnum::STATE_KEY);
-        $sessionState = $request->getSession()->get(KeycloakAuthorizationCodeEnum::STATE_SESSION_KEY);
+        $queryState = $request->query->get(
+            KeycloakAuthorizationCodeEnum::STATE_KEY,
+        );
+        $sessionState = $request
+            ->getSession()
+            ->get(KeycloakAuthorizationCodeEnum::STATE_SESSION_KEY);
         if (null === $queryState || $queryState !== $sessionState) {
             throw new AuthenticationException(sprintf('query state (%s) is not the same as session state (%s)', $queryState ?? 'NULL', $sessionState ?? 'NULL'));
         }
 
-        $queryCode = $request->query->get(KeycloakAuthorizationCodeEnum::CODE_KEY);
+        $queryCode = $request->query->get(
+            KeycloakAuthorizationCodeEnum::CODE_KEY,
+        );
         if (null === $queryCode) {
             throw new AuthenticationException('Authentication failed! Did you authorize our app?');
         }
@@ -53,14 +61,20 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
         catch (IdentityProviderException $e) {
             throw new AuthenticationException(sprintf('Error authenticating code grant (%s)', $e->getMessage()), previous: $e);
         }
+        catch (ClientException $e) {
+            throw new AuthenticationException(sprintf('Bad status code returned by openID server (%s)', $e->getResponse()->getStatusCode()), previous: $e);
+        }
         catch (\Exception $e) {
-            throw new AuthenticationException(sprintf('Bad status code returned by openID server (%s)', $e->getStatusCode()), previous: $e);
+            throw new AuthenticationException(sprintf('Unexpected error occurred (%s)', $e->getMessage()), previous: $e);
         }
 
         if (!$accessToken || !$accessToken->getToken()) {
-            $this->keycloakClientLogger->error('KeycloakAuthenticator::authenticate', [
-                'error' => 'No access token provided',
-            ]);
+            $this->keycloakClientLogger->error(
+                'KeycloakAuthenticator::authenticate',
+                [
+                    'error' => 'No access token provided',
+                ],
+            );
             throw new CustomUserMessageAuthenticationException('No access token provided');
         }
 
@@ -71,20 +85,30 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
             throw new CustomUserMessageAuthenticationException('Refresh token not found');
         }
 
-        return new SelfValidatingPassport(new UserBadge($accessToken->getToken(), fn () => $this->userProvider->loadUserByIdentifier($accessToken)));
+        return new SelfValidatingPassport(
+            new UserBadge(
+                $accessToken->getToken(),
+                fn () => $this->userProvider->loadUserByIdentifier($accessToken),
+            ),
+        );
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
+    public function onAuthenticationSuccess(
+        Request $request,
+        TokenInterface $token,
+        string $firewallName,
+    ): ?Response {
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
-    {
-        $request->getSession()->getBag('flashes')->add(
-            'error',
-            'An authentication error occured',
-        );
+    public function onAuthenticationFailure(
+        Request $request,
+        AuthenticationException $exception,
+    ): ?Response {
+        $errors = [
+            'error' => 'An authentication error occured',
+        ];
+        $request->getSession()->getBag('flashes')->clear()->initialize($errors);
 
         // $message = strtr($exception->getMessageKey(), $exception->getMessageData());
         return new Response('Authentication failed', Response::HTTP_FORBIDDEN);

@@ -11,7 +11,6 @@ use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
 
 class HS256TokenDecoder implements TokenDecoderInterface
 {
-
     public function decode(string $token, string $key): array
     {
         try {
@@ -20,7 +19,8 @@ class HS256TokenDecoder implements TokenDecoderInterface
             $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
 
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             throw new TokenDecoderException('Error decoding token', $e);
         }
     }
@@ -33,12 +33,12 @@ class HS256TokenDecoder implements TokenDecoderInterface
             throw TokenDecoderException::forExpiration(new \Exception('Token has expired'));
         }
 
-        if (str_contains($tokenDecoded['iss'], $realm) === false) {
+        if (false === str_contains($tokenDecoded['iss'], $realm)) {
             throw TokenDecoderException::forIssuerMismatch(new \Exception('Invalid token issuer'));
         }
-//
-//        if ($tokenDecoded['aud'] !== 'account') {
-//            throw TokenDecoderException::forAudienceMismatch(new \Exception('Invalid token audience'));
-//        }
+        //
+        //        if ($tokenDecoded['aud'] !== 'account') {
+        //            throw TokenDecoderException::forAudienceMismatch(new \Exception('Invalid token audience'));
+        //        }
     }
 }

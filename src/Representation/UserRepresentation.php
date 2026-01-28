@@ -10,6 +10,12 @@ use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class UserRepresentation extends Representation
 {
+    /**
+     * @param ?Map<string> $attributes
+     * @param ?Map<string> $clientRoles
+     * @param ?Map<string> $applicationRoles
+     * @param ?Map<string> $access
+     */
     public function __construct(
         public ?string $id = null,
         public ?string $username = null,
@@ -31,14 +37,14 @@ final class UserRepresentation extends Representation
         public ?array $disableableCredentialTypes = null,
         /** @var string[]|null */
         public ?array $requiredActions = null,
-        //public ?FederatedIdentityCollection $federatedIdentities = null,
+        // public ?FederatedIdentityCollection $federatedIdentities = null,
         /** @var string[]|null */
         public ?array $realmRoles = null,
         public ?Map $clientRoles = null,
         public ?UserConsentCollection $clientConsents = null,
         public ?int $notBefore = null,
         public ?Map $applicationRoles = null,
-        //public ?SocialLinkCollection $socialLinks = null,
+        // public ?SocialLinkCollection $socialLinks = null,
         /** @var string[]|null */
         public ?array $groups = null,
         public ?Map $access = null,

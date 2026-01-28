@@ -8,7 +8,7 @@ namespace Mainick\KeycloakClientBundle\Annotation;
 final readonly class Until
 {
     public function __construct(
-        public string $version
+        public string $version,
     ) {
     }
 }

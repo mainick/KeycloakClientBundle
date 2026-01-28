@@ -22,38 +22,57 @@ final readonly class KeycloakAuthenticationEntryPoint implements AuthenticationE
     ) {
     }
 
-    public function start(Request $request, ?AuthenticationException $authException = null): Response
-    {
+    public function start(
+        Request $request,
+        ?AuthenticationException $authException = null,
+    ): Response {
         // Handling AJAX requests
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_UNAUTHORIZED,
                     'message' => 'Authentication Required',
-                    'login_url' => $this->urlGenerator->generate('mainick_keycloak_security_auth_connect'),
+                    'login_url' => $this->urlGenerator->generate(
+                        'mainick_keycloak_security_auth_connect',
+                    ),
                 ],
-                Response::HTTP_UNAUTHORIZED
+                Response::HTTP_UNAUTHORIZED,
             );
         }
 
         if ($request->hasSession()) {
-            $request->getSession()->set(KeycloakAuthorizationCodeEnum::LOGIN_REFERRER, $request->getUri());
+            $request
+                ->getSession()
+                ->set(
+                    KeycloakAuthorizationCodeEnum::LOGIN_REFERRER,
+                    $request->getUri(),
+                );
 
-            $request->getSession()->getBag('flashes')->add(
-                'info',
-                'Please log in to access this page',
-            );
+            $info = [
+                'info' => 'Please log in to access this page',
+            ];
+
+            $request
+                ->getSession()
+                ->getBag('flashes')
+                ->clear()
+                ->initialize($info);
         }
 
-        $this->keycloakClientLogger?->info('KeycloakAuthenticationEntryPoint::start', [
-            'path' => $request->getPathInfo(),
-            'error' => $authException?->getMessage(),
-            'loginReferrer' => $request->getUri(),
-        ]);
+        $this->keycloakClientLogger?->info(
+            'KeycloakAuthenticationEntryPoint::start',
+            [
+                'path' => $request->getPathInfo(),
+                'error' => $authException?->getMessage(),
+                'loginReferrer' => $request->getUri(),
+            ],
+        );
 
         return new RedirectResponse(
-            $this->urlGenerator->generate('mainick_keycloak_security_auth_connect'),
-            Response::HTTP_TEMPORARY_REDIRECT
+            $this->urlGenerator->generate(
+                'mainick_keycloak_security_auth_connect',
+            ),
+            Response::HTTP_TEMPORARY_REDIRECT,
         );
     }
 }
