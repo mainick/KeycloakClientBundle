@@ -52,11 +52,9 @@ final readonly class KeycloakAuthenticationEntryPoint implements AuthenticationE
                 'info' => 'Please log in to access this page',
             ];
 
-            $request
-                ->getSession()
-                ->getBag('flashes')
-                ->clear()
-                ->initialize($info);
+            $flashes = $request->getSession()->getBag('flashes');
+            $flashes->clear();
+            $flashes->initialize($info);
         }
 
         $this->keycloakClientLogger?->info(
