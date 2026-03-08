@@ -8,7 +8,6 @@ use Firebase\JWT\JWT;
 use GuzzleHttp\ClientInterface;
 use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
-use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -86,7 +85,7 @@ EOF;
     {
         parent::setUp();
         $this->keycloakClient = new KeycloakClient(
-            $this->createMock(LoggerInterface::class),
+            $this->createStub(LoggerInterface::class),
             true,
             'http://mock.url/auth',
             'mock_realm',
@@ -101,33 +100,27 @@ EOF;
         $this->access_token = JWT::encode(json_decode($jwt_tmp, true), self::ENCRYPTION_KEY, self::ENCRYPTION_ALGORITHM);
     }
 
-    protected function tearDown(): void
-    {
-        m::close();
-        parent::tearDown();
-    }
-
     public function testRefreshToken(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(2)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->exactly(2))
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -142,24 +135,24 @@ EOF;
     public function testVerifyToken(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -175,37 +168,38 @@ EOF;
     public function testUserInfo(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
-        $getResourceOwnerStream = $this->createMock(StreamInterface::class);
+        $getResourceOwnerStream = $this->createStub(StreamInterface::class);
         $getResourceOwnerStream
             ->method('__toString')
             ->willReturn($jwt_tmp);
 
-        $getResourceOwnerResponse = m::mock(ResponseInterface::class);
+        $getResourceOwnerResponse = $this->createStub(ResponseInterface::class);
         $getResourceOwnerResponse
-            ->allows('getBody')
-            ->andReturns($getResourceOwnerStream);
+            ->method('getBody')
+            ->willReturn($getResourceOwnerStream);
         $getResourceOwnerResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
         $client
-            ->allows('send')
-            ->andReturns($getAccessTokenResponse, $getResourceOwnerResponse);
+            ->method('send')
+            ->willReturn($getAccessTokenResponse, $getResourceOwnerResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -222,24 +216,24 @@ EOF;
     public function testAuthenticate(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -256,24 +250,24 @@ EOF;
     public function testAuthenticateByCode()
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -290,24 +284,24 @@ EOF;
     public function testGetRolesUser(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -323,24 +317,24 @@ EOF;
     public function testHasRoleInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -354,24 +348,24 @@ EOF;
     public function testHasAnyRoleInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -385,24 +379,24 @@ EOF;
     public function testHasAllRolesInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -416,24 +410,24 @@ EOF;
     public function testGetGroupsUser(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -449,24 +443,24 @@ EOF;
     public function testHasGroupInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -480,24 +474,24 @@ EOF;
     public function testHasAnyGroupInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -511,24 +505,24 @@ EOF;
     public function testHasAllGroupsInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -542,24 +536,24 @@ EOF;
     public function testGetScopeUser(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -575,24 +569,24 @@ EOF;
     public function testHasScopeInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -606,24 +600,24 @@ EOF;
     public function testHasAnyScopeInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when
@@ -637,24 +631,24 @@ EOF;
     public function testHasAllScopesInUserSOnes(): void
     {
         // given
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
 
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
-        $client = m::mock(ClientInterface::class);
-        $client
-            ->expects('send')
-            ->times(1)
-            ->andReturns($getAccessTokenResponse);
+        $client = $this->createMock(ClientInterface::class);
+        $client->expects($this->once())
+            ->method('send')
+            ->willReturn($getAccessTokenResponse);
+
         $this->keycloakClient->setHttpClient($client);
 
         // when

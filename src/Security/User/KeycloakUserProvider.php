@@ -17,11 +17,11 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 /**
  * @implements UserProviderInterface<KeycloakResourceOwner>
  */
-class KeycloakUserProvider implements UserProviderInterface
+readonly class KeycloakUserProvider implements UserProviderInterface
 {
     public function __construct(
-        private readonly LoggerInterface $keycloakClientLogger,
-        private readonly IamClientInterface $iamClient
+        private LoggerInterface $keycloakClientLogger,
+        private IamClientInterface $iamClient
     ) {
     }
 
