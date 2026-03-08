@@ -39,10 +39,13 @@ final readonly class KeycloakAuthenticationEntryPoint implements AuthenticationE
         if ($request->hasSession()) {
             $request->getSession()->set(KeycloakAuthorizationCodeEnum::LOGIN_REFERRER, $request->getUri());
 
-            $request->getSession()->getBag('flashes')->add(
-                'info',
-                'Please log in to access this page',
-            );
+            $info = [
+                'info' => 'Please log in to access this page',
+            ];
+
+            $flashes = $request->getSession()->getBag('flashes');
+            $flashes->clear();
+            $flashes->initialize($info);
         }
 
         $this->keycloakClientLogger?->info('KeycloakAuthenticationEntryPoint::start', [

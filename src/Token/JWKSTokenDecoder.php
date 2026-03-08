@@ -14,6 +14,9 @@ use Mainick\KeycloakClientBundle\Interface\TokenDecoderInterface;
 final readonly class JWKSTokenDecoder implements TokenDecoderInterface
 {
 
+    /**
+     * @throws TokenDecoderException
+     */
     public function __construct(
         private ClientInterface $httpClient,
         private array $options
@@ -21,7 +24,7 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
     {
         foreach ($options as $allowOption => $value) {
             if (!\in_array($allowOption, ['base_url', 'realm', 'alg', 'http_timeout', 'http_connect_timeout', 'allowed_jwks_domains'], true)) {
-                throw TokenDecoderException::forInvalidConfiguration(\sprintf(
+                throw TokenDecoderException::forInvalidConfiguration(sprintf(
                     "Unknown option '%s' for %s",
                     $allowOption,
                     self::class
@@ -31,7 +34,7 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
 
         foreach (['base_url', 'realm'] as $requiredOption) {
             if (!\array_key_exists($requiredOption, $this->options) || $this->options[$requiredOption] === null || $this->options[$requiredOption] === '') {
-                throw TokenDecoderException::forInvalidConfiguration(\sprintf(
+                throw TokenDecoderException::forInvalidConfiguration(sprintf(
                     "Missing or empty required option '%s' for %s",
                     $requiredOption,
                     self::class
@@ -62,7 +65,7 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
     {
         try {
             $parts = explode('.', $token);
-            if (\count($parts) !== 3 || $parts[0] === '' || $parts[1] === '' || $parts[2] === '') {
+            if (count($parts) !== 3 || $parts[0] === '' || $parts[1] === '' || $parts[2] === '') {
                 throw TokenDecoderException::forDecodingError(
                     'Invalid JWT format: token must consist of header.payload.signature',
                     new \Exception('invalid token format')
@@ -153,6 +156,9 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
         return $keys[$kid];
     }
 
+    /**
+     * @throws TokenDecoderException
+     */
     private function fetchJwks(): array
     {
         $timeout = $this->options['http_timeout'] ?? 10;
@@ -179,17 +185,20 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
             $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
 
             return $data;
-        } catch (GuzzleException $e) {
+        }
+        catch (GuzzleException $e) {
             throw TokenDecoderException::forJwksError(
                 sprintf('Failed to fetch JWKS from %s: %s', $url, $e->getMessage()),
                 $e
             );
-        } catch (\JsonException $e) {
+        }
+        catch (\JsonException $e) {
             throw TokenDecoderException::forJwksError(
                 sprintf('Invalid JSON response from JWKS endpoint: %s', $e->getMessage()),
                 $e
             );
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             throw TokenDecoderException::forJwksError(
                 sprintf('Unable to retrieve JWKS: %s', $e->getMessage()),
                 $e
@@ -285,7 +294,8 @@ final readonly class JWKSTokenDecoder implements TokenDecoderInterface
                     $isAllowed = true;
                     break;
                 }
-            } elseif ($host === $allowedDomain) {
+            }
+            elseif ($host === $allowedDomain) {
                 $isAllowed = true;
                 break;
             }

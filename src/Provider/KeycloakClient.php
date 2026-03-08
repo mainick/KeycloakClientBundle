@@ -49,7 +49,8 @@ class KeycloakClient implements IamClientInterface
             }
             if ('' !== $this->encryption_key) {
                 $this->keycloakProvider->setEncryptionKey($this->encryption_key);
-            } elseif ('' !== $this->encryption_key_path) {
+            }
+            elseif ('' !== $this->encryption_key_path) {
                 $this->keycloakProvider->setEncryptionKeyPath($this->encryption_key_path);
             }
         }

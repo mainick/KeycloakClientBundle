@@ -7,7 +7,6 @@ namespace Mainick\KeycloakClientBundle\Serializer;
 use Mainick\KeycloakClientBundle\Representation\Collection\Collection;
 use Mainick\KeycloakClientBundle\Representation\Representation;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class RepresentationDenormalizer implements DenormalizerInterface
 {

@@ -12,6 +12,8 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 {
     /**
      * Raw response.
+     *
+     * @param array<string,mixed> $response
      */
     protected array $response;
 
@@ -19,6 +21,8 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
     /**
      * Creates new resource owner.
+     *
+     * @param array<string,mixed> $response The raw response from the token decoder
      */
     public function __construct(array $response = [], ?AccessTokenInterface $accessToken = null)
     {
@@ -109,7 +113,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
             $resource_access,
             static fn(array $carry, array $client): array => [
                 ...$carry,
-                ...($client['roles'] ?? [])
+                ...$client['roles'] ?? []
             ],
             []
         );

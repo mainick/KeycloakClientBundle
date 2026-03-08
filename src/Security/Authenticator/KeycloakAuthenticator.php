@@ -53,8 +53,11 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
         catch (IdentityProviderException $e) {
             throw new AuthenticationException(sprintf('Error authenticating code grant (%s)', $e->getMessage()), previous: $e);
         }
+        catch (ClientException $e) {
+            throw new AuthenticationException(sprintf('Bad status code returned by openID server (%s)', $e->getResponse()->getStatusCode()), previous: $e);
+        }
         catch (\Exception $e) {
-            throw new AuthenticationException(sprintf('Bad status code returned by openID server (%s)', $e->getStatusCode()), previous: $e);
+            throw new AuthenticationException(sprintf('Unexpected error occurred (%s)', $e->getMessage()), previous: $e);
         }
 
         if (!$accessToken || !$accessToken->getToken()) {
@@ -81,10 +84,10 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        $request->getSession()->getBag('flashes')->add(
-            'error',
-            'An authentication error occured',
-        );
+        $errors = [
+            'error' => 'An authentication error occured',
+        ];
+        $request->getSession()->getBag('flashes')->clear()->initialize($errors);
 
         // $message = strtr($exception->getMessageKey(), $exception->getMessageData());
         return new Response('Authentication failed', Response::HTTP_FORBIDDEN);

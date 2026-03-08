@@ -20,7 +20,8 @@ class HS256TokenDecoder implements TokenDecoderInterface
             $json = json_encode($tokenDecoded, JSON_THROW_ON_ERROR);
 
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             throw new TokenDecoderException('Error decoding token', $e);
         }
     }

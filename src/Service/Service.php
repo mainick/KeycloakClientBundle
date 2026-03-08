@@ -121,7 +121,7 @@ abstract class Service
         return '?' . http_build_query($criteria->jsonSerialize());
     }
 
-    private function isSuccessful($statusCode): bool
+    private function isSuccessful(int $statusCode): bool
     {
         return ($statusCode >= Response::HTTP_OK && $statusCode < Response::HTTP_MULTIPLE_CHOICES) || $statusCode === Response::HTTP_NOT_MODIFIED;
     }
