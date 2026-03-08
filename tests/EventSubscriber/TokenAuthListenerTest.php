@@ -11,7 +11,6 @@ use Mainick\KeycloakClientBundle\Annotation\ExcludeTokenValidationAttribute;
 use Mainick\KeycloakClientBundle\EventSubscriber\TokenAuthListener;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
 use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
-use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -101,7 +100,7 @@ EOF;
     {
         parent::setUp();
         $this->keycloakClient = new KeycloakClient(
-            $this->createMock(LoggerInterface::class),
+            $this->createStub(LoggerInterface::class),
             true,
             'http://mock.url/auth',
             'mock_realm',
@@ -114,59 +113,54 @@ EOF;
         $this->access_token = JWT::encode(json_decode($jwt_tmp, true), self::ENCRYPTION_KEY, self::ENCRYPTION_ALGORITHM);
     }
 
-    protected function tearDown(): void
-    {
-        m::close();
-        parent::tearDown();
-    }
-
     public function testCheckValidTokenOnRequest(): void
     {
         // given
         // mock access token
-        $getAccessTokenStream = $this->createMock(StreamInterface::class);
+        $getAccessTokenStream = $this->createStub(StreamInterface::class);
         $getAccessTokenStream
             ->method('__toString')
             ->willReturn('{"access_token":"'.$this->access_token.'","expires_in":3600,"refresh_token":"mock_refresh_token","scope":"email","token_type":"bearer"}');
-        $getAccessTokenResponse = m::mock(ResponseInterface::class);
+
+        $getAccessTokenResponse = $this->createStub(ResponseInterface::class);
         $getAccessTokenResponse
-            ->allows('getBody')
-            ->andReturns($getAccessTokenStream);
+            ->method('getBody')
+            ->willReturn($getAccessTokenStream);
         $getAccessTokenResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
         // mock resource owner
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
-        $getResourceOwnerStream = $this->createMock(StreamInterface::class);
+        $getResourceOwnerStream = $this->createStub(StreamInterface::class);
         $getResourceOwnerStream
             ->method('__toString')
             ->willReturn($jwt_tmp);
-        $getResourceOwnerResponse = m::mock(ResponseInterface::class);
+        $getResourceOwnerResponse = $this->createStub(ResponseInterface::class);
         $getResourceOwnerResponse
-            ->allows('getBody')
-            ->andReturns($getResourceOwnerStream);
+            ->method('getBody')
+            ->willReturn($getResourceOwnerStream);
         $getResourceOwnerResponse
-            ->allows('getHeader')
-            ->andReturns(['content-type' => 'application/json']);
+            ->method('getHeader')
+            ->willReturn(['content-type' => 'application/json']);
 
         // mock http client
-        $client = m::mock(ClientInterface::class);
+        $client = $this->createStub(ClientInterface::class);
         $client
-            ->allows('send')
-            ->andReturns($getAccessTokenResponse, $getResourceOwnerResponse);
+            ->method('send')
+            ->willReturn($getAccessTokenResponse, $getResourceOwnerResponse);
         $this->keycloakClient->setHttpClient($client);
 
         // when
         $token = $this->keycloakClient->authenticate('mock_user', 'mock_password');
 
         // mock event request
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
         $tokenAuthListener = new TokenAuthListener($logger, $this->keycloakClient);
         $request = new Request();
         $request->headers->set('X-Auth-Token', $token->getToken());
         $eventRequest = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
+            $this->createStub(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );
@@ -182,8 +176,8 @@ EOF;
     public function testCheckValidTokenExcludesRouteWithAttribute(): void
     {
         // given
-        $logger = $this->createMock(LoggerInterface::class);
-        $iamClient = $this->createMock(IamClientInterface::class);
+        $logger = $this->createStub(LoggerInterface::class);
+        $iamClient = $this->createStub(IamClientInterface::class);
         $tokenAuthListener = new TokenAuthListener($logger, $iamClient);
 
         // when
@@ -197,7 +191,7 @@ EOF;
 
         // Mock the Event
         $eventRequest = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
+            $this->createStub(HttpKernelInterface::class),
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );

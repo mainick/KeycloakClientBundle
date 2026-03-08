@@ -58,11 +58,9 @@ final class RealmRepresentation extends Representation
         public ?bool $realmCacheEnabled = null,
         public ?bool $bruteForceProtected = null,
         public ?bool $permanentLockout = null,
-        #[Since('24.0.0')]
-        public ?int $maxTemporaryLockouts = null,
+        #[Since('24.0.0')] public ?int $maxTemporaryLockouts = null,
         public ?int $maxFailureWaitSeconds = null,
-        #[Since('24.0.0')]
-        public ?int $minimumQuickLoginWaitSeconds = null,
+        #[Since('24.0.0')] public ?int $minimumQuickLoginWaitSeconds = null,
         public ?int $waitIncrementSeconds = null,
         public ?int $quickLoginCheckMilliSeconds = null,
         public ?int $maxDeltaTimeSeconds = null,
@@ -88,8 +86,7 @@ final class RealmRepresentation extends Representation
         public ?int $otpPolicyDigits = null,
         public ?int $otpPolicyLookAheadWindow = null,
         public ?int $otpPolicyPeriod = null,
-        #[Since('20.0.0')]
-        public ?bool $otpPolicyCodeReusable = null,
+        #[Since('20.0.0')] public ?bool $otpPolicyCodeReusable = null,
         /** @var string[]|null */
         public ?array $otpSupportedApplications = null,
         public ?string $webAuthnPolicyRpEntityName = null,
@@ -105,8 +102,7 @@ final class RealmRepresentation extends Representation
         /** @var string[]|null */
         public ?array $webAuthnPolicyAcceptableAaguids = null,
         /** @var string[]|null */
-        #[Since('23.0.0')]
-        public ?array $webAuthnPolicyExtraOrigins = null,
+        #[Since('23.0.0')] public ?array $webAuthnPolicyExtraOrigins = null,
         public ?string $webAuthnPolicyPasswordlessRpEntityName = null,
         /** @var string[]|null */
         public ?array $webAuthnPolicyPasswordlessSignatureAlgorithms = null,
@@ -120,8 +116,7 @@ final class RealmRepresentation extends Representation
         /** @var string[]|null */
         public ?array $webAuthnPolicyPasswordlessAcceptableAaguids = null,
         /** @var string[]|null */
-        #[Since('23.0.0')]
-        public ?array $webAuthnPolicyPasswordlessExtraOrigins = null,
+        #[Since('23.0.0')] public ?array $webAuthnPolicyPasswordlessExtraOrigins = null,
         //public ?ClientProfiles $clientProfiles = null,
         //public ?ClientPolicies $clientPolicies = null,
         public ?UserCollection $users = null,
@@ -167,8 +162,7 @@ final class RealmRepresentation extends Representation
         public ?string $resetCredentialsFlow = null,
         public ?string $clientAuthenticationFlow = null,
         public ?string $dockerAuthenticationFlow = null,
-        #[Since('24.0.0')]
-        public ?string $firstBrokerLoginFlow = null,
+        #[Since('24.0.0')] public ?string $firstBrokerLoginFlow = null,
         public ?Map $attributes = null,
         public ?string $keycloakVersion = null,
         public ?bool $userManagedAccessAllowed = null,
@@ -176,30 +170,22 @@ final class RealmRepresentation extends Representation
 //        public ?bool $organizationsEnabled = null,
 //        #[Since('25.0.0')]
 //        public ?OrganizationCollection $organizations = null,
-        #[Since('25.0.0')]
-        public ?bool $verifiableCredentialsEnabled = null,
-        #[Since('25.0.0')]
-        public ?bool $adminPermissionsEnabled = null,
-        #[Since('25.0.0')]
-        public ?bool $social = null,
-        #[Since('25.0.0')]
-        public ?bool $updateProfileOnInitialSocialLogin = null,
+        #[Since('25.0.0')] public ?bool $verifiableCredentialsEnabled = null,
+        #[Since('25.0.0')] public ?bool $adminPermissionsEnabled = null,
+        #[Since('25.0.0')] public ?bool $social = null,
+        #[Since('25.0.0')] public ?bool $updateProfileOnInitialSocialLogin = null,
         /** @var string[]|null */
-        #[Since('25.0.0')]
-        public ?array $socialProviders = null,
+        #[Since('25.0.0')] public ?array $socialProviders = null,
         /** @var string[]|null */
-        #[Since('25.0.0')]
-        public ?array $applicationScopeMappings = null,
+        #[Since('25.0.0')] public ?array $applicationScopeMappings = null,
 //        #[Since('25.0.0')]
 //        public ?ApplicationRepresentation $application = null,
 //        #[Since('25.0.0')]
 //        public ?OAuthClientRepresentation $oauthClients = null,
 //        #[Since('25.0.0')]
 //        public ?ClientTemplateRepresentation $clientTemplates = null,
-        #[Since('25.0.0')]
-        public ?int $oAuth2DeviceCodeLifespan = null,
-        #[Since('25.0.0')]
-        public ?int $oAuth2DevicePollingInterval = null,
+        #[Since('25.0.0')] public ?int $oAuth2DeviceCodeLifespan = null,
+        #[Since('25.0.0')] public ?int $oAuth2DevicePollingInterval = null,
     ) {
     }
 }

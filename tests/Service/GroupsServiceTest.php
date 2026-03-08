@@ -15,39 +15,38 @@ use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
 use Mainick\KeycloakClientBundle\Service\GroupsService;
-use Mainick\KeycloakClientBundle\Service\HttpMethodEnum;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
-use Mockery as m;
+use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 
 class GroupsServiceTest extends TestCase
 {
+    use ExecuteCommandTestHelperTrait;
+
     private GroupsService $groupsService;
-    private m\MockInterface $httpClient;
-    private m\MockInterface $keycloakAdminClient;
-    private m\MockInterface $logger;
-    private m\MockInterface $serializer;
+    private ClientInterface $httpClient;
+    private KeycloakAdminClient $keycloakAdminClient;
+    private LoggerInterface $logger;
+    private Serializer $serializer;
     private AccessToken $adminAccessToken;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->httpClient = m::mock(ClientInterface::class);
-        $this->keycloakAdminClient = m::mock(KeycloakAdminClient::class);
-        $this->logger = m::mock(LoggerInterface::class);
-        $this->serializer = m::mock(Serializer::class);
+        $this->httpClient = $this->createMock(ClientInterface::class);
+        $this->keycloakAdminClient = $this->createStub(KeycloakAdminClient::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->serializer = $this->createMock(Serializer::class);
 
-        $keycloakProvider = m::mock(Keycloak::class);
-        $keycloakProvider->shouldReceive('getHttpClient')->andReturn($this->httpClient);
+        $keycloakProvider = $this->createStub(Keycloak::class);
+        $keycloakProvider->method('getHttpClient')->willReturn($this->httpClient);
 
-        $this->keycloakAdminClient->shouldReceive('getKeycloakProvider')->andReturn($keycloakProvider);
-        $this->keycloakAdminClient->shouldReceive('getBaseUrl')->andReturn('http://mock.url/auth');
-        $this->keycloakAdminClient->shouldReceive('getVersion')->andReturn('17.0.1');
+        $this->keycloakAdminClient->method('getKeycloakProvider')->willReturn($keycloakProvider);
+        $this->keycloakAdminClient->method('getBaseUrl')->willReturn('http://mock.url/auth');
+        $this->keycloakAdminClient->method('getVersion')->willReturn('17.0.1');
 
         $this->adminAccessToken = new AccessToken();
         $this->adminAccessToken
@@ -56,7 +55,7 @@ class GroupsServiceTest extends TestCase
             ->setRefreshToken('mock_refresh_token')
             ->setValues(['scope' => 'email']);
 
-        $this->keycloakAdminClient->shouldReceive('getAdminAccessToken')->andReturn($this->adminAccessToken);
+        $this->keycloakAdminClient->method('getAdminAccessToken')->willReturn($this->adminAccessToken);
 
         $this->groupsService = new GroupsService(
             $this->logger,
@@ -65,14 +64,7 @@ class GroupsServiceTest extends TestCase
 
         $reflection = new \ReflectionClass($this->groupsService);
         $serializerProperty = $reflection->getProperty('serializer');
-        $serializerProperty->setAccessible(true);
         $serializerProperty->setValue($this->groupsService, $this->serializer);
-    }
-
-    protected function tearDown(): void
-    {
-        m::close();
-        parent::tearDown();
     }
 
     public function testAll(): void
@@ -80,20 +72,16 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $responseBody = '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups', m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups', $this->callback(function($options) {
                 return isset($options['headers']['Authorization']) &&
                        $options['headers']['Authorization'] === 'Bearer mock_token';
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
         $groupCollection = new GroupCollection();
         $group1 = new GroupRepresentation();
@@ -106,11 +94,12 @@ class GroupsServiceTest extends TestCase
         $groupCollection->add($group2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, GroupCollection::class)
-            ->andReturn($groupCollection);
+            ->willReturn($groupCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->all($realm);
@@ -129,17 +118,13 @@ class GroupsServiceTest extends TestCase
         $criteria = new Criteria(['briefRepresentation' => 'true']);
         $realm = 'test-realm';
         $responseBody = '[{"id":"group1","name":"group1"},{"id":"group2","name":"group2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups?briefRepresentation=true', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups?briefRepresentation=true', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $groupCollection = new GroupCollection();
         $group1 = new GroupRepresentation();
@@ -152,11 +137,12 @@ class GroupsServiceTest extends TestCase
         $groupCollection->add($group2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, GroupCollection::class)
-            ->andReturn($groupCollection);
+            ->willReturn($groupCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->all($realm, $criteria);
@@ -174,24 +160,19 @@ class GroupsServiceTest extends TestCase
         // given
         $realm = 'test-realm';
         $responseBody = '2';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/count', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/count', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $this->serializer
-            ->shouldReceive('deserialize')
-            ->with($responseBody, 'array')
-            ->andReturn(2);
+            ->expects($this->never())
+            ->method('deserialize');
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->count($realm);
@@ -207,17 +188,13 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'parent-group';
         $responseBody = '[{"id":"child1","name":"child1"},{"id":"child2","name":"child2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/children', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/children', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $groupCollection = new GroupCollection();
         $child1 = new GroupRepresentation();
@@ -230,11 +207,12 @@ class GroupsServiceTest extends TestCase
         $groupCollection->add($child2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, GroupCollection::class)
-            ->andReturn($groupCollection);
+            ->willReturn($groupCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->children($realm, $groupId);
@@ -253,17 +231,13 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'group1';
         $responseBody = '{"id":"group1","name":"group1","path":"/group1"}';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId, m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId, $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $group = new GroupRepresentation();
         $group->id = 'group1';
@@ -271,11 +245,12 @@ class GroupsServiceTest extends TestCase
         $group->path = '/group1';
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, GroupRepresentation::class)
-            ->andReturn($group);
+            ->willReturn($group);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->get($realm, $groupId);
@@ -296,21 +271,21 @@ class GroupsServiceTest extends TestCase
         $group->name = 'new-group';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(201);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(201, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups', m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'admin/realms/'.$realm.'/groups', $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->create($realm, $group);
@@ -328,21 +303,21 @@ class GroupsServiceTest extends TestCase
         $group->name = 'child-group';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(201);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(201, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$parentGroupId.'/children', m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$parentGroupId.'/children', $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->createChild($realm, $parentGroupId, $group);
@@ -361,21 +336,21 @@ class GroupsServiceTest extends TestCase
         $group->name = 'updated-group';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('PUT', 'admin/realms/'.$realm.'/groups/'.$groupId, m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('PUT', 'admin/realms/'.$realm.'/groups/'.$groupId, $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->update($realm, $groupId, $group);
@@ -390,19 +365,19 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'group1';
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId, m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId, $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->delete($realm, $groupId);
@@ -417,17 +392,13 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'group1';
         $responseBody = '[{"id":"user1","username":"user1"},{"id":"user2","username":"user2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/members', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/members', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $userCollection = new UserCollection();
         $user1 = new UserRepresentation();
@@ -440,11 +411,12 @@ class GroupsServiceTest extends TestCase
         $userCollection->add($user2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, UserCollection::class)
-            ->andReturn($userCollection);
+            ->willReturn($userCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->users($realm, $groupId);
@@ -463,17 +435,13 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'group1';
         $responseBody = '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $roleCollection = new RoleCollection();
         $role1 = new RoleRepresentation();
@@ -486,11 +454,12 @@ class GroupsServiceTest extends TestCase
         $roleCollection->add($role2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, RoleCollection::class)
-            ->andReturn($roleCollection);
+            ->willReturn($roleCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->realmRoles($realm, $groupId);
@@ -509,17 +478,13 @@ class GroupsServiceTest extends TestCase
         $realm = 'test-realm';
         $groupId = 'group1';
         $responseBody = '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm/available', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm/available', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $roleCollection = new RoleCollection();
         $role3 = new RoleRepresentation();
@@ -532,11 +497,12 @@ class GroupsServiceTest extends TestCase
         $roleCollection->add($role4);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, RoleCollection::class)
-            ->andReturn($roleCollection);
+            ->willReturn($roleCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->availableRealmRoles($realm, $groupId);
@@ -559,21 +525,21 @@ class GroupsServiceTest extends TestCase
         $role->name = 'role3';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->addRealmRole($realm, $groupId, $role);
@@ -592,21 +558,21 @@ class GroupsServiceTest extends TestCase
         $role->name = 'role1';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->removeRealmRole($realm, $groupId, $role);
@@ -622,17 +588,13 @@ class GroupsServiceTest extends TestCase
         $clientUuid = 'client1';
         $groupId = 'group1';
         $responseBody = '[{"id":"role1","name":"role1"},{"id":"role2","name":"role2"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $roleCollection = new RoleCollection();
         $role1 = new RoleRepresentation();
@@ -645,11 +607,12 @@ class GroupsServiceTest extends TestCase
         $roleCollection->add($role2);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, RoleCollection::class)
-            ->andReturn($roleCollection);
+            ->willReturn($roleCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->clientRoles($realm, $clientUuid, $groupId);
@@ -669,17 +632,13 @@ class GroupsServiceTest extends TestCase
         $clientUuid = 'client1';
         $groupId = 'group1';
         $responseBody = '[{"id":"role3","name":"role3"},{"id":"role4","name":"role4"}]';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(200);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(200, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid.'/available', m::type('array'))
-            ->andReturn($response);
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid.'/available', $this->callback(static fn ($options): bool => is_array($options)))
+            ->willReturn($response);
 
         $roleCollection = new RoleCollection();
         $role3 = new RoleRepresentation();
@@ -692,11 +651,12 @@ class GroupsServiceTest extends TestCase
         $roleCollection->add($role4);
 
         $this->serializer
-            ->shouldReceive('deserialize')
+            ->expects($this->once())
+            ->method('deserialize')
             ->with($responseBody, RoleCollection::class)
-            ->andReturn($roleCollection);
+            ->willReturn($roleCollection);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->availableClientRoles($realm, $clientUuid, $groupId);
@@ -720,21 +680,21 @@ class GroupsServiceTest extends TestCase
         $role->name = 'role3';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->addClientRole($realm, $clientUuid, $groupId, $role);
@@ -754,21 +714,21 @@ class GroupsServiceTest extends TestCase
         $role->name = 'role1';
 
         $responseBody = '';
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->method('getContents')->willReturn($responseBody);
-
-        $response = m::mock(ResponseInterface::class);
-        $response->shouldReceive('getStatusCode')->andReturn(204);
-        $response->shouldReceive('getBody')->andReturn($stream);
+        $response = $this->createCommandResponse(204, $responseBody);
 
         $this->httpClient
-            ->shouldReceive('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, m::on(function($options) {
+            ->expects($this->once())
+            ->method('request')
+            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function($options) {
                 return isset($options['json']);
             }))
-            ->andReturn($response);
+            ->willReturn($response);
 
-        $this->logger->shouldReceive('info')->once();
+        $this->serializer
+            ->expects($this->never())
+            ->method('deserialize');
+
+        $this->logger->expects($this->once())->method('info');
 
         // when
         $result = $this->groupsService->removeClientRole($realm, $clientUuid, $groupId, $role);

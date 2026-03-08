@@ -14,7 +14,7 @@ class JWKSTokenDecoderTest extends TestCase
 {
     public function testConstructorValidatesBaseUrl(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('Invalid base_url format');
@@ -29,7 +29,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsHttpForNonLocalhost(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('HTTP is only allowed for localhost');
@@ -44,7 +44,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorAcceptsHttpForLocalhost(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder(
             $httpClient,
@@ -58,7 +58,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsPrivateIpRanges(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
@@ -73,7 +73,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorRejectsMetadataEndpoints(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('is not allowed');
@@ -88,7 +88,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testConstructorAcceptsValidHttpsUrl(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder(
             $httpClient, [
@@ -101,7 +101,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testFetchJwksValidatesDomainWhitelist(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder(
             $httpClient, [
@@ -127,7 +127,7 @@ class JWKSTokenDecoderTest extends TestCase
     public function testFetchJwksAllowsBaseUrlDomainByDefault(): void
     {
         // Create a mock stream for the response body
-        $stream = $this->createMock(StreamInterface::class);
+        $stream = $this->createStub(StreamInterface::class);
         $stream->method('getContents')->willReturn(json_encode([
             'keys' => [
                 [
@@ -141,11 +141,11 @@ class JWKSTokenDecoderTest extends TestCase
         ], JSON_THROW_ON_ERROR));
 
         // Create a mock response
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
         $response->method('getBody')->willReturn($stream);
 
         // Create a mock HTTP client
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $decoder = new JWKSTokenDecoder(
@@ -163,7 +163,7 @@ class JWKSTokenDecoderTest extends TestCase
     public function testWildcardDomainMatching(): void
     {
         // Create a mock stream for the response body
-        $stream = $this->createMock(StreamInterface::class);
+        $stream = $this->createStub(StreamInterface::class);
         $stream->method('getContents')->willReturn(json_encode([
             'keys' => [
                 [
@@ -177,11 +177,11 @@ class JWKSTokenDecoderTest extends TestCase
         ], JSON_THROW_ON_ERROR));
 
         // Create a mock response
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
         $response->method('getBody')->willReturn($stream);
 
         // Create a mock HTTP client
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $decoder = new JWKSTokenDecoder(
@@ -202,7 +202,7 @@ class JWKSTokenDecoderTest extends TestCase
         // for non-localhost domains by configuring an HTTP base URL directly.
 
         // Create a mock HTTP client
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $this->expectException(TokenDecoderException::class);
         $this->expectExceptionMessage('HTTP is only allowed for localhost.');
@@ -265,7 +265,7 @@ class JWKSTokenDecoderTest extends TestCase
         $payloadEncoded = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
         $token = "$headerEncoded.$payloadEncoded.fake-signature";
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
@@ -295,7 +295,7 @@ class JWKSTokenDecoderTest extends TestCase
         $payloadEncoded = rtrim(strtr(base64_encode($payload), '+/', '-_'), '=');
         $token = "$headerEncoded.$payloadEncoded.fake-signature";
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         // Decoder expects RS256
         $decoder = new JWKSTokenDecoder($httpClient, [
@@ -340,13 +340,13 @@ class JWKSTokenDecoderTest extends TestCase
             ],
         ];
 
-        $stream = $this->createMock(StreamInterface::class);
+        $stream = $this->createStub(StreamInterface::class);
         $stream->method('getContents')->willReturn(json_encode($jwksData, JSON_THROW_ON_ERROR));
 
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
         $response->method('getBody')->willReturn($stream);
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
@@ -362,7 +362,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testValidateTokenThrowsExceptionForExpiredToken(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
@@ -383,7 +383,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testValidateTokenThrowsExceptionForInvalidIssuer(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
@@ -404,7 +404,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testValidateTokenAcceptsValidToken(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
@@ -426,7 +426,7 @@ class JWKSTokenDecoderTest extends TestCase
 
     public function testDecodeThrowsExceptionForInvalidJwtFormat(): void
     {
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
 
         $decoder = new JWKSTokenDecoder($httpClient, [
             'base_url' => 'https://keycloak.example.com',
@@ -460,13 +460,13 @@ class JWKSTokenDecoderTest extends TestCase
         // Mock JWKS with empty keys array
         $jwksData = ['keys' => []];
 
-        $stream = $this->createMock(StreamInterface::class);
+        $stream = $this->createStub(StreamInterface::class);
         $stream->method('getContents')->willReturn(json_encode($jwksData, JSON_THROW_ON_ERROR));
 
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
         $response->method('getBody')->willReturn($stream);
 
-        $httpClient = $this->createMock(ClientInterface::class);
+        $httpClient = $this->createStub(ClientInterface::class);
         $httpClient->method('request')->willReturn($response);
 
         $decoder = new JWKSTokenDecoder($httpClient, [

@@ -9,9 +9,9 @@ use Traversable;
 /**
  * @template T
  *
- * @implements \JsonSerializable<T>
+ * @implements \IteratorAggregate<T>
  */
-class Map extends Type implements \Countable, \IteratorAggregate
+class Map extends Type implements \Countable, \IteratorAggregate, \JsonSerializable
 {
     /**
      * @param array<string, T> $data
@@ -56,6 +56,10 @@ class Map extends Type implements \Countable, \IteratorAggregate
         return $this->data[$key];
     }
 
+    /**
+     * @param T $value
+     * @return Map<T>
+     */
     public function with(string $key, mixed $value): self
     {
         $clone = clone $this;
@@ -64,6 +68,9 @@ class Map extends Type implements \Countable, \IteratorAggregate
         return $clone;
     }
 
+    /**
+     * @return Map<T>
+     */
     public function without(string $key): self
     {
         $clone = clone $this;

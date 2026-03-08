@@ -70,7 +70,7 @@ final class AttributeNormalizer implements NormalizerInterface
         }
 
         $filteredProperties = [];
-        $properties = (new \ReflectionClass($representation))->getProperties();
+        $properties = new \ReflectionClass($representation)->getProperties();
         foreach ($properties as $property) {
             $sinceAttribute = $property->getAttributes(Since::class);
             foreach ($sinceAttribute as $since) {

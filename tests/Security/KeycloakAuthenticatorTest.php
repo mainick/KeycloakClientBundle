@@ -11,7 +11,6 @@ use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
 use Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakAuthenticator;
 use Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider;
 use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
-use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -100,47 +99,40 @@ EOF;
         $jwt_tmp = sprintf($this->jwtTemplate, time() + 3600, time(), time());
         $this->access_token = JWT::encode(json_decode($jwt_tmp, true), self::ENCRYPTION_KEY, self::ENCRYPTION_ALGORITHM);
 
-        $this->iamClient = m::mock(KeycloakClient::class);
-        $accessToken = m::mock(AccessTokenInterface::class);
+        $this->iamClient = $this->createStub(KeycloakClient::class);
+        $accessToken = $this->createStub(AccessTokenInterface::class);
         $accessToken
-            ->allows('getToken')
-            ->andReturns($this->access_token);
+            ->method('getToken')
+            ->willReturn($this->access_token);
         $accessToken
-            ->allows('getRefreshToken')
-            ->andReturns('mock_refresh_token');
+            ->method('getRefreshToken')
+            ->willReturn('mock_refresh_token');
         $this->iamClient
-            ->allows('authenticateCodeGrant')
-            ->with('authorization_code')
-            ->andReturns($accessToken);
+            ->method('authenticateCodeGrant')
+            ->willReturn($accessToken);
 
-        $this->userProvider = m::mock(KeycloakUserProvider::class);
-        $this->resourceOwner = m::mock(KeycloakResourceOwner::class);
+        $this->userProvider = $this->createStub(KeycloakUserProvider::class);
+        $this->resourceOwner = $this->createStub(KeycloakResourceOwner::class);
         $this->userProvider
-            ->allows('loadUserByIdentifier')
-            ->with($accessToken)
-            ->andReturns($this->resourceOwner);
+            ->method('loadUserByIdentifier')
+            ->willReturn($this->resourceOwner);
 
         $this->authenticator = new KeycloakAuthenticator(
-            $this->createMock(LoggerInterface::class),
+            $this->createStub(LoggerInterface::class),
             $this->iamClient,
             $this->userProvider
         );
     }
 
-    protected function tearDown(): void
-    {
-        m::close();
-        parent::tearDown();
-    }
-
     public function testAuthenticateSuccessfulAuthentication(): void
     {
         // given
-        $session = m::mock(SessionInterface::class);
+        $session = $this->createMock(SessionInterface::class);
         $session
-            ->allows('get')
+            ->expects($this->once())
+            ->method('get')
             ->with(KeycloakAuthorizationCodeEnum::STATE_SESSION_KEY)
-            ->andReturns('mock_state');
+            ->willReturn('mock_state');
 
         $request = new Request();
         $request->query->add([
@@ -163,11 +155,12 @@ EOF;
     public function testAuthenticateInvalidState(): void
     {
         // given
-        $session = m::mock(SessionInterface::class);
+        $session = $this->createMock(SessionInterface::class);
         $session
-            ->allows('get')
+            ->expects($this->once())
+            ->method('get')
             ->with(KeycloakAuthorizationCodeEnum::STATE_SESSION_KEY)
-            ->andReturns('some_state');
+            ->willReturn('some_state');
 
         $request = new Request();
         $request->query->add([
@@ -185,11 +178,12 @@ EOF;
     public function testAuthenticateMissingCode(): void
     {
         // given
-        $session = m::mock(SessionInterface::class);
+        $session = $this->createMock(SessionInterface::class);
         $session
-            ->allows('get')
+            ->expects($this->once())
+            ->method('get')
             ->with(KeycloakAuthorizationCodeEnum::STATE_SESSION_KEY)
-            ->andReturns('mock_state');
+            ->willReturn('mock_state');
 
         $request = new Request();
         $request->query->add([

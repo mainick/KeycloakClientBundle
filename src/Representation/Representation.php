@@ -12,7 +12,7 @@ abstract class Representation implements \JsonSerializable
     abstract public function __construct();
 
     /**
-     * @param array $properties
+     * @param array<string, mixed> $properties
      * @return static
      * @throws PropertyDoesNotExistException
      */
@@ -33,13 +33,13 @@ abstract class Representation implements \JsonSerializable
      */
     public static function fromJson(string $json): static
     {
-        return static::from((new JsonEncoder())->decode($json, JsonEncoder::FORMAT));
+        return static::from(new JsonEncoder()->decode($json, JsonEncoder::FORMAT));
     }
 
     final public function jsonSerialize(): array
     {
         $serializable = [];
-        $reflectedClass = (new \ReflectionClass($this));
+        $reflectedClass = new \ReflectionClass($this);
         $properties = $reflectedClass->getProperties(\ReflectionProperty::IS_PUBLIC);
         foreach ($properties as $property) {
             $serializable[$property->getName()] = ($property->getValue($this) instanceof \JsonSerializable)

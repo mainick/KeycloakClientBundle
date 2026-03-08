@@ -58,9 +58,9 @@ abstract class Collection implements \Countable, \IteratorAggregate, \JsonSerial
         if (!$representation instanceof $expectedClass) {
             throw new \InvalidArgumentException(sprintf(
                 '%s expects items to be %s representation, %s given',
-                (new \ReflectionClass(static::class))->getShortName(),
-                (new \ReflectionClass($expectedClass))->getShortName(),
-                (new \ReflectionClass($representation))->getShortName()
+                new \ReflectionClass(static::class)->getShortName(),
+                new \ReflectionClass($expectedClass)->getShortName(),
+                new \ReflectionClass($representation)->getShortName()
             ));
         }
 

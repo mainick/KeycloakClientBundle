@@ -14,11 +14,14 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class KeycloakUserProvider implements UserProviderInterface
+/**
+ * @implements UserProviderInterface<KeycloakResourceOwner>
+ */
+readonly class KeycloakUserProvider implements UserProviderInterface
 {
     public function __construct(
-        private readonly LoggerInterface $keycloakClientLogger,
-        private readonly IamClientInterface $iamClient
+        private LoggerInterface $keycloakClientLogger,
+        private IamClientInterface $iamClient
     ) {
     }
 
@@ -63,7 +66,7 @@ class KeycloakUserProvider implements UserProviderInterface
         return KeycloakResourceOwner::class === $class;
     }
 
-    public function loadUserByIdentifier($identifier): UserInterface
+    public function loadUserByIdentifier(mixed $identifier): UserInterface
     {
         if (!$identifier instanceof AccessTokenInterface) {
             throw new \LogicException('Could not load a KeycloakUser without an AccessToken.');

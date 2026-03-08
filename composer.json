@@ -9,17 +9,17 @@
     "oauth2-keycloak"
   ],
   "require": {
-    "php": ">=8.2",
-    "stevenmaguire/oauth2-keycloak": "^5.1",
-    "symfony/routing": "^6.4 || ^7.2 || ^8.0",
-    "symfony/security-bundle": "^6.4 || ^7.2 || ^8.0",
-    "symfony/http-kernel": "^6.4 || ^7.2 || ^8.0",
-    "symfony/framework-bundle": "^6.4 || ^7.2 || ^8.0",
-    "symfony/serializer-pack": "^1.3"
+    "php": ">=8.4",
+    "stevenmaguire/oauth2-keycloak": "^6.1",
+    "symfony/routing": "^6.4 || ^7.4 || ^8.0",
+    "symfony/security-bundle": "^6.4 || ^7.4 || ^8.0",
+    "symfony/http-kernel": "^6.4 || ^7.4 || ^8.0",
+    "symfony/framework-bundle": "^6.4 || ^7.4 || ^8.0",
+    "symfony/serializer-pack": "^1.4"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.75",
-    "phpunit/phpunit": "^11.2",
+    "friendsofphp/php-cs-fixer": "^3.94",
+    "phpunit/phpunit": "^13.0",
     "mockery/mockery": "^1.6",
     "phpstan/phpstan": "^2.1"
   },
