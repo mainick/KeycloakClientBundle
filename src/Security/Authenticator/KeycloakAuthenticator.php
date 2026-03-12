@@ -87,7 +87,10 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
         $errors = [
             'error' => 'An authentication error occured',
         ];
-        $request->getSession()->getBag('flashes')->clear()->initialize($errors);
+
+        $flashes = $request->getSession()->getBag('flashes');
+        $flashes->clear();
+        $flashes->initialize($errors);
 
         // $message = strtr($exception->getMessageKey(), $exception->getMessageData());
         return new Response('Authentication failed', Response::HTTP_FORBIDDEN);
