@@ -159,6 +159,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
         return $this->response;
     }
 
+    #[\Deprecated]
     public function eraseCredentials(): void
     {
     }
