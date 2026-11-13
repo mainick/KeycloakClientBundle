@@ -11,8 +11,8 @@ use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
 use Mainick\KeycloakClientBundle\Service\RealmsService;
-use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
+use Mainick\KeycloakClientBundle\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
@@ -72,9 +72,9 @@ class RealmsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('GET', 'admin/realms', $this->callback(function($options) {
-                return isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
+            ->with('GET', 'admin/realms', $this->callback(function ($options) {
+                return isset($options['headers']['Authorization'])
+                       && 'Bearer mock_token' === $options['headers']['Authorization'];
             }))
             ->willReturn($response);
 
@@ -193,7 +193,7 @@ class RealmsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'admin/realms/', $this->callback(function($options) {
+            ->with('POST', 'admin/realms/', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -224,7 +224,7 @@ class RealmsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('PUT', 'admin/realms/test', $this->callback(function($options) {
+            ->with('PUT', 'admin/realms/test', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);

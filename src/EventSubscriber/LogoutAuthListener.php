@@ -19,7 +19,7 @@ final readonly class LogoutAuthListener
         private UrlGeneratorInterface $urlGenerator,
         private TokenStorageInterface $tokenStorage,
         private IamClientInterface $iamClient,
-        private string $defaultTargetRouteName
+        private string $defaultTargetRouteName,
     ) {
     }
 

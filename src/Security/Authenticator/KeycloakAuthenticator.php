@@ -25,7 +25,7 @@ class KeycloakAuthenticator extends AbstractAuthenticator implements Interactive
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
         private readonly IamClientInterface $iamClient,
-        private readonly KeycloakUserProvider $userProvider
+        private readonly KeycloakUserProvider $userProvider,
     ) {
     }
 

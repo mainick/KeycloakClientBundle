@@ -15,7 +15,7 @@ final class ProtocolMapperRepresentation extends Representation
         public ?string $protocolMapper = null,
         public ?bool $consentRequired = null,
         public ?string $consentText = null,
-        public ?Map $config = null
+        public ?Map $config = null,
     ) {
     }
 }

@@ -18,7 +18,6 @@ final class UserSessionRepresentation extends Representation
         public ?bool $rememberMe = null,
         public ?Map $clients = null,
         public ?bool $transientUser = null,
-    )
-    {
+    ) {
     }
 }

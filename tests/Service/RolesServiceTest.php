@@ -15,8 +15,8 @@ use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
 use Mainick\KeycloakClientBundle\Service\RolesService;
-use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
+use Mainick\KeycloakClientBundle\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
@@ -78,9 +78,9 @@ class RolesServiceTest extends TestCase
             ->expects($this->once())
             ->method('request')
             ->with('GET', 'admin/realms/'.$realm.'/roles', $this->callback(static function ($options): bool {
-                return is_array($options) &&
-                       isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
+                return is_array($options)
+                       && isset($options['headers']['Authorization'])
+                       && 'Bearer mock_token' === $options['headers']['Authorization'];
             }))
             ->willReturn($response);
 

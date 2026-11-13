@@ -21,7 +21,7 @@ readonly class KeycloakUserProvider implements UserProviderInterface
 {
     public function __construct(
         private LoggerInterface $keycloakClientLogger,
-        private IamClientInterface $iamClient
+        private IamClientInterface $iamClient,
     ) {
     }
 

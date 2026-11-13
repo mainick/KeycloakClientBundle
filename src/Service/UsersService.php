@@ -123,6 +123,7 @@ final class UsersService extends Service
     {
         $roles = new RoleCollection();
         $roles->add($role);
+
         return $this->executeCommand(
             HttpMethodEnum::POST,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm',
@@ -134,6 +135,7 @@ final class UsersService extends Service
     {
         $roles = new RoleCollection();
         $roles->add($role);
+
         return $this->executeCommand(
             HttpMethodEnum::DELETE,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/realm',
@@ -161,6 +163,7 @@ final class UsersService extends Service
     {
         $roles = new RoleCollection();
         $roles->add($role);
+
         return $this->executeCommand(
             HttpMethodEnum::POST,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid,
@@ -172,6 +175,7 @@ final class UsersService extends Service
     {
         $roles = new RoleCollection();
         $roles->add($role);
+
         return $this->executeCommand(
             HttpMethodEnum::DELETE,
             'admin/realms/'.$realm.'/users/'.$userId.'/role-mappings/clients/'.$clientUuid,

@@ -45,16 +45,16 @@ class TokenDecoderException extends \Exception
 
     public static function forJwksError(string $message, \Exception $e): self
     {
-        return new self('JWKS error: ' . $message, $e);
+        return new self('JWKS error: '.$message, $e);
     }
 
     public static function forDecodingError(string $message, \Exception $e): self
     {
-        return new self('Token decoding error: ' . $message, $e);
+        return new self('Token decoding error: '.$message, $e);
     }
 
     public static function forSecurityViolation(string $message, ?\Exception $e = null): self
     {
-        return new self('Security violation: ' . $message, $e ?? new \Exception($message));
+        return new self('Security violation: '.$message, $e ?? new \Exception($message));
     }
 }

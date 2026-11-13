@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class AttributeNormalizer implements NormalizerInterface
 {
-    /** @var array<class-string<Representation>, array<string, array{since?: string, until?: string}>> $filteredProperties */
+    /** @var array<class-string<Representation>, array<string, array{since?: string, until?: string}>> */
     private array $filteredProperties = [];
 
     public function __construct(
@@ -21,7 +21,6 @@ final class AttributeNormalizer implements NormalizerInterface
     }
 
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
      */
     public function normalize(mixed $data, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
@@ -45,7 +44,6 @@ final class AttributeNormalizer implements NormalizerInterface
     }
 
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
      */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
@@ -53,9 +51,6 @@ final class AttributeNormalizer implements NormalizerInterface
         return $data instanceof Representation;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupportedTypes(?string $format): array
     {
         return [

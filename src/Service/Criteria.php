@@ -10,7 +10,7 @@ final readonly class Criteria
      * @param array<string, mixed> $criteria
      */
     public function __construct(
-        private array $criteria = []
+        private array $criteria = [],
     ) {
     }
 
@@ -35,7 +35,7 @@ final readonly class Criteria
                 },
                 $this->criteria
             ),
-            static fn($value) => null !== $value
+            static fn ($value) => null !== $value
         );
     }
 }

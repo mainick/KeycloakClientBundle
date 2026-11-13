@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Representation;
 
-use Mainick\KeycloakClientBundle\Representation\Representation;
 use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class CredentialRepresentation extends Representation
@@ -27,8 +26,7 @@ final class CredentialRepresentation extends Representation
         public ?string $algorithm = null,
         public ?int $digits = null,
         public ?int $period = null,
-        public ?Map $config = null
-    )
-    {
+        public ?Map $config = null,
+    ) {
     }
 }

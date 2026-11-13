@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\UserProfileAttributeGroupMetadat
  */
 class UserProfileAttributeGroupMetadataCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return UserProfileAttributeGroupMetadata::class;

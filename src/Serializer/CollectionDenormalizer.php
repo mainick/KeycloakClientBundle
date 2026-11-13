@@ -33,7 +33,7 @@ final readonly class CollectionDenormalizer implements DenormalizerInterface
     public function getSupportedTypes(?string $format): array
     {
         return [
-            Collection::class => true
+            Collection::class => true,
         ];
     }
 }
