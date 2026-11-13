@@ -150,6 +150,24 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
     }
 
     /**
+     * Get resource owner attributes.
+     *
+     * @return array<string,mixed>
+     */
+    public function getAttributes(): array
+    {
+        return $this->response['attributes'] ?? [];
+    }
+
+    /**
+     * Get a single resource owner attribute, or null when it is missing.
+     */
+    public function getAttribute(string $name): ?string
+    {
+        return $this->getAttributes()[$name] ?? null;
+    }
+
+    /**
      * Return all of the owner details available as an array.
      *
      * @return array<string,mixed>
