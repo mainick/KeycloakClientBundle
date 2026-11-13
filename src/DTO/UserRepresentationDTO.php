@@ -31,6 +31,7 @@ final readonly class UserRepresentationDTO
         public ?array $applicationRoles,
         public ?array $groups,
         public ?array $scope,
+        public ?string $picture = null,
     ) {
     }
 
@@ -98,6 +99,7 @@ final readonly class UserRepresentationDTO
             applicationRoles: count($application_roles) ? $application_roles : null,
             groups: count($groups) ? $groups : null,
             scope: count($scope) ? $scope : null,
+            picture: $data['picture'] ?? $data['attributes']['picture'] ?? null,
         );
     }
 }
