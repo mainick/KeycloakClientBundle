@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
  */
 class RoleCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return RoleRepresentation::class;

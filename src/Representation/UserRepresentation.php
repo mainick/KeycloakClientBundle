@@ -31,14 +31,14 @@ final class UserRepresentation extends Representation
         public ?array $disableableCredentialTypes = null,
         /** @var string[]|null */
         public ?array $requiredActions = null,
-        //public ?FederatedIdentityCollection $federatedIdentities = null,
+        // public ?FederatedIdentityCollection $federatedIdentities = null,
         /** @var string[]|null */
         public ?array $realmRoles = null,
         public ?Map $clientRoles = null,
         public ?UserConsentCollection $clientConsents = null,
         public ?int $notBefore = null,
         public ?Map $applicationRoles = null,
-        //public ?SocialLinkCollection $socialLinks = null,
+        // public ?SocialLinkCollection $socialLinks = null,
         /** @var string[]|null */
         public ?array $groups = null,
         public ?Map $access = null,

@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Service;
 
-use Mainick\KeycloakClientBundle\Representation\Collection\GroupCollection;
 use Mainick\KeycloakClientBundle\Representation\Collection\RealmCollection;
-use Mainick\KeycloakClientBundle\Representation\Collection\RoleCollection;
-use Mainick\KeycloakClientBundle\Representation\Collection\UserCollection;
-use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
 use Mainick\KeycloakClientBundle\Representation\RealmRepresentation;
-use Mainick\KeycloakClientBundle\Representation\RoleRepresentation;
-use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 
 final class RealmsService extends Service
 {

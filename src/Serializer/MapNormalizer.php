@@ -9,9 +9,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class MapNormalizer implements NormalizerInterface
 {
-
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
      */
     public function normalize(mixed $data, ?string $format = null, array $context = []): \ArrayObject
@@ -24,7 +22,6 @@ final class MapNormalizer implements NormalizerInterface
     }
 
     /**
-     * @inheritDoc
      * @param array<string, mixed> $context
      */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
@@ -32,13 +29,10 @@ final class MapNormalizer implements NormalizerInterface
         return $data instanceof Map;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupportedTypes(?string $format): array
     {
         return [
-            Map::class => true
+            Map::class => true,
         ];
     }
 }

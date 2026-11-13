@@ -15,8 +15,8 @@ use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\Criteria;
 use Mainick\KeycloakClientBundle\Service\GroupsService;
-use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
+use Mainick\KeycloakClientBundle\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
@@ -77,9 +77,9 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('GET', 'admin/realms/'.$realm.'/groups', $this->callback(function($options) {
-                return isset($options['headers']['Authorization']) &&
-                       $options['headers']['Authorization'] === 'Bearer mock_token';
+            ->with('GET', 'admin/realms/'.$realm.'/groups', $this->callback(function ($options) {
+                return isset($options['headers']['Authorization'])
+                       && 'Bearer mock_token' === $options['headers']['Authorization'];
             }))
             ->willReturn($response);
 
@@ -276,7 +276,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups', $this->callback(function($options) {
+            ->with('POST', 'admin/realms/'.$realm.'/groups', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -308,7 +308,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$parentGroupId.'/children', $this->callback(function($options) {
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$parentGroupId.'/children', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -341,7 +341,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('PUT', 'admin/realms/'.$realm.'/groups/'.$groupId, $this->callback(function($options) {
+            ->with('PUT', 'admin/realms/'.$realm.'/groups/'.$groupId, $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -530,7 +530,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function($options) {
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -563,7 +563,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function($options) {
+            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/realm', $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -685,7 +685,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function($options) {
+            ->with('POST', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);
@@ -719,7 +719,7 @@ class GroupsServiceTest extends TestCase
         $this->httpClient
             ->expects($this->once())
             ->method('request')
-            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function($options) {
+            ->with('DELETE', 'admin/realms/'.$realm.'/groups/'.$groupId.'/role-mappings/clients/'.$clientUuid, $this->callback(function ($options) {
                 return isset($options['json']);
             }))
             ->willReturn($response);

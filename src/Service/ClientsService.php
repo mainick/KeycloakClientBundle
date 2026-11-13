@@ -95,9 +95,8 @@ final class ClientsService extends Service
         string $realm,
         string $clientUuid,
         string $roleName,
-        ?Criteria $criteria = null
-    ): ?GroupCollection
-    {
+        ?Criteria $criteria = null,
+    ): ?GroupCollection {
         return $this->executeQuery(
             'admin/realms/'.$realm.'/clients/'.$clientUuid.'/roles/'.$roleName.'/groups',
             GroupCollection::class,
@@ -112,14 +111,12 @@ final class ClientsService extends Service
         string $realm,
         string $clientUuid,
         string $roleName,
-        ?Criteria $criteria = null
-    ): ?UserCollection
-    {
+        ?Criteria $criteria = null,
+    ): ?UserCollection {
         return $this->executeQuery(
             'admin/realms/'.$realm.'/clients/'.$clientUuid.'/roles/'.$roleName.'/users',
             UserCollection::class,
             $criteria
         );
     }
-
 }

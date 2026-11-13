@@ -54,5 +54,4 @@ final class RolesService extends Service
     {
         return $this->executeQuery('admin/realms/'.$realm.'/roles/'.$roleName.'/users', UserCollection::class, $criteria);
     }
-
 }

@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\ClientScopeRepresentation;
  */
 class ClientScopeCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return ClientScopeRepresentation::class;

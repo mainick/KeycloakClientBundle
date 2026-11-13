@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\GroupRepresentation;
  */
 class GroupCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return GroupRepresentation::class;

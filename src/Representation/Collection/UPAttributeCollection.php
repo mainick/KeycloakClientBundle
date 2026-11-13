@@ -11,9 +11,6 @@ use Mainick\KeycloakClientBundle\Representation\UPAttribute;
  */
 class UPAttributeCollection extends Collection
 {
-    /**
-     * @inheritDoc
-     */
     public static function getRepresentationClass(): string
     {
         return UPAttribute::class;

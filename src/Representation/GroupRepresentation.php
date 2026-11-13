@@ -21,8 +21,7 @@ final class GroupRepresentation extends Representation
         /** @var string[]|null */
         public ?array $realmRoles = null,
         public ?Map $clientRoles = null,
-        public ?Map $access = null
-    )
-    {
+        public ?Map $access = null,
+    ) {
     }
 }

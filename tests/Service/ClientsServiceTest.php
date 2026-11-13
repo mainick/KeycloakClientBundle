@@ -17,11 +17,11 @@ use Mainick\KeycloakClientBundle\Representation\UserRepresentation;
 use Mainick\KeycloakClientBundle\Serializer\Serializer;
 use Mainick\KeycloakClientBundle\Service\ClientsService;
 use Mainick\KeycloakClientBundle\Service\Criteria;
+use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
-use Mainick\KeycloakClientBundle\Tests\Service\Support\ExecuteCommandTestHelperTrait;
 
 class ClientsServiceTest extends TestCase
 {
@@ -31,7 +31,7 @@ class ClientsServiceTest extends TestCase
     private ClientInterface $httpClient;
     private KeycloakAdminClient $keycloakAdminClient;
     private LoggerInterface $logger;
-    private Serializer  $serializer;
+    private Serializer $serializer;
     private AccessToken $adminAccessToken;
 
     protected function setUp(): void
@@ -299,6 +299,7 @@ class ClientsServiceTest extends TestCase
         // then
         $this->assertTrue($result);
     }
+
     public function testRoles(): void
     {
         // given

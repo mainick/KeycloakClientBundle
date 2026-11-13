@@ -15,9 +15,6 @@ final readonly class RepresentationDenormalizer implements DenormalizerInterface
     ) {
     }
 
-    /**
-     * @inheritDoc
-     */
     public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
         if (!is_array($data)) {
@@ -26,10 +23,7 @@ final readonly class RepresentationDenormalizer implements DenormalizerInterface
 
         $representation = new $type();
         if (!$representation instanceof Representation) {
-            throw new \InvalidArgumentException(sprintf(
-                'Type %s is not a valid Representation class.',
-                $type
-            ));
+            throw new \InvalidArgumentException(sprintf('Type %s is not a valid Representation class.', $type));
         }
 
         $reflectionClass = new \ReflectionClass($type);
@@ -47,8 +41,8 @@ final readonly class RepresentationDenormalizer implements DenormalizerInterface
 
                         // This is the recursive part
                         if (
-                            class_exists($paramTypeName) &&
-                            (is_subclass_of($paramTypeName, Collection::class) || is_subclass_of($paramTypeName, Representation::class))
+                            class_exists($paramTypeName)
+                            && (is_subclass_of($paramTypeName, Collection::class) || is_subclass_of($paramTypeName, Representation::class))
                         ) {
                             $paramValue = $this->denormalizer->denormalize($paramValue, $paramTypeName, $format, $context);
                         }
@@ -70,21 +64,15 @@ final readonly class RepresentationDenormalizer implements DenormalizerInterface
         return $representation;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && class_exists($type) && is_subclass_of($type, Representation::class);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getSupportedTypes(?string $format): array
     {
         return [
-            Representation::class => true
+            Representation::class => true,
         ];
     }
 }

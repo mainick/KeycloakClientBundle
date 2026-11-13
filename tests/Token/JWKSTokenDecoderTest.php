@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Tests\Token;
@@ -119,7 +120,8 @@ class JWKSTokenDecoderTest extends TestCase
         try {
             $decoder->decode($token, '');
             $this->fail('Expected TokenDecoderException to be thrown');
-        } catch (TokenDecoderException $e) {
+        }
+        catch (TokenDecoderException $e) {
             $this->assertStringContainsString('Security violation: JWKS URL host "keycloak.example.com" is not in the allowed domains whitelist', $e->getMessage());
         }
     }
@@ -480,4 +482,3 @@ class JWKSTokenDecoderTest extends TestCase
         $decoder->decode($token, '');
     }
 }
-

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mainick\KeycloakClientBundle\Representation;
 
 use Mainick\KeycloakClientBundle\Representation\Collection\ProtocolMapperCollection;
-use Mainick\KeycloakClientBundle\Representation\Representation;
 use Mainick\KeycloakClientBundle\Representation\Type\Map;
 
 final class ClientScopeRepresentation extends Representation

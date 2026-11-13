@@ -38,7 +38,7 @@ abstract class Service
 
         $response = $this->httpClient->request(
             HttpMethodEnum::GET->value,
-            $path . $this->getQueryParams($criteria),
+            $path.$this->getQueryParams($criteria),
             $this->defaultOptions()
         );
 
@@ -51,11 +51,11 @@ abstract class Service
                 'response' => $content,
             ]);
 
-            if ($content === '' || trim($content) === '') {
+            if ('' === $content || '' === trim($content)) {
                 throw new \UnexpectedValueException('Empty response');
             }
 
-            if ($returnType === 'array') {
+            if ('array' === $returnType) {
                 return (new JsonDecode([JsonDecode::ASSOCIATIVE => true]))->decode($content, JsonEncoder::FORMAT);
             }
 
@@ -68,9 +68,8 @@ abstract class Service
     protected function executeCommand(
         HttpMethodEnum $method,
         string $path,
-        Representation|Collection|array|null $payload = null
-    ): bool
-    {
+        Representation|Collection|array|null $payload = null,
+    ): bool {
         if (!$this->isAuthorized()) {
             $this->inizializeAdminAccessToken();
         }
@@ -118,12 +117,12 @@ abstract class Service
             return '';
         }
 
-        return '?' . http_build_query($criteria->jsonSerialize());
+        return '?'.http_build_query($criteria->jsonSerialize());
     }
 
     private function isSuccessful(int $statusCode): bool
     {
-        return ($statusCode >= Response::HTTP_OK && $statusCode < Response::HTTP_MULTIPLE_CHOICES) || $statusCode === Response::HTTP_NOT_MODIFIED;
+        return ($statusCode >= Response::HTTP_OK && $statusCode < Response::HTTP_MULTIPLE_CHOICES) || Response::HTTP_NOT_MODIFIED === $statusCode;
     }
 
     private function isAuthorized(): bool

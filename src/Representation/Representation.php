@@ -13,7 +13,7 @@ abstract class Representation implements \JsonSerializable
 
     /**
      * @param array<string, mixed> $properties
-     * @return static
+     *
      * @throws PropertyDoesNotExistException
      */
     final public static function from(array $properties): static
@@ -27,8 +27,6 @@ abstract class Representation implements \JsonSerializable
     }
 
     /**
-     * @param string $json
-     * @return static
      * @throws PropertyDoesNotExistException
      */
     public static function fromJson(string $json): static

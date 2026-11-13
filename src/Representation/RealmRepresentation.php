@@ -117,11 +117,11 @@ final class RealmRepresentation extends Representation
         public ?array $webAuthnPolicyPasswordlessAcceptableAaguids = null,
         /** @var string[]|null */
         #[Since('23.0.0')] public ?array $webAuthnPolicyPasswordlessExtraOrigins = null,
-        //public ?ClientProfiles $clientProfiles = null,
-        //public ?ClientPolicies $clientPolicies = null,
+        // public ?ClientProfiles $clientProfiles = null,
+        // public ?ClientPolicies $clientPolicies = null,
         public ?UserCollection $users = null,
         public ?UserCollection $federatedUsers = null,
-        //public ?ScopeMappingCollection $scopeMappings = null,
+        // public ?ScopeMappingCollection $scopeMappings = null,
         public ?Map $clientScopeMappings = null,
         public ?ClientCollection $clients = null,
         public ?ClientScopeCollection $clientScopes = null,
@@ -131,8 +131,8 @@ final class RealmRepresentation extends Representation
         public ?array $defaultOptionalClientScopes = null,
         public ?Map $browserSecurityHeaders = null,
         public ?Map $smtpServer = null,
-        //public ?UserFederationProviderCollection $userFederationProviders = null,
-        //public ?UserFederationMapperCollection $userFederationMappers = null,
+        // public ?UserFederationProviderCollection $userFederationProviders = null,
+        // public ?UserFederationMapperCollection $userFederationMappers = null,
         public ?string $loginTheme = null,
         public ?string $accountTheme = null,
         public ?string $adminTheme = null,
@@ -145,17 +145,17 @@ final class RealmRepresentation extends Representation
         public ?array $enabledEventTypes = null,
         public ?bool $adminEventsEnabled = null,
         public ?bool $adminEventsDetailsEnabled = null,
-        //public ?IdentityProviderCollection $identityProviders = null,
-        //public ?IdentityProviderMapperCollection $identityProviderMappers = null,
+        // public ?IdentityProviderCollection $identityProviders = null,
+        // public ?IdentityProviderMapperCollection $identityProviderMappers = null,
         public ?ProtocolMapperCollection $protocolMappers = null,
-        //public ?MultivaluedHashMap $components = null,
+        // public ?MultivaluedHashMap $components = null,
         public ?bool $internationalizationEnabled = null,
         /** @var string[]|null */
         public ?array $supportedLocales = null,
         public ?string $defaultLocale = null,
-        //public ?AuthenticationFlowCollection $authenticationFlows = null,
-        //public ?AuthenticatorConfigCollection $authenticatorConfig = null,
-        //public ?RequiredActionProviderCollection $requiredActions = null,
+        // public ?AuthenticationFlowCollection $authenticationFlows = null,
+        // public ?AuthenticatorConfigCollection $authenticatorConfig = null,
+        // public ?RequiredActionProviderCollection $requiredActions = null,
         public ?string $browserFlow = null,
         public ?string $registrationFlow = null,
         public ?string $directGrantFlow = null,
@@ -166,10 +166,10 @@ final class RealmRepresentation extends Representation
         public ?Map $attributes = null,
         public ?string $keycloakVersion = null,
         public ?bool $userManagedAccessAllowed = null,
-//        #[Since('25.0.0')]
-//        public ?bool $organizationsEnabled = null,
-//        #[Since('25.0.0')]
-//        public ?OrganizationCollection $organizations = null,
+        //        #[Since('25.0.0')]
+        //        public ?bool $organizationsEnabled = null,
+        //        #[Since('25.0.0')]
+        //        public ?OrganizationCollection $organizations = null,
         #[Since('25.0.0')] public ?bool $verifiableCredentialsEnabled = null,
         #[Since('25.0.0')] public ?bool $adminPermissionsEnabled = null,
         #[Since('25.0.0')] public ?bool $social = null,
@@ -178,12 +178,12 @@ final class RealmRepresentation extends Representation
         #[Since('25.0.0')] public ?array $socialProviders = null,
         /** @var string[]|null */
         #[Since('25.0.0')] public ?array $applicationScopeMappings = null,
-//        #[Since('25.0.0')]
-//        public ?ApplicationRepresentation $application = null,
-//        #[Since('25.0.0')]
-//        public ?OAuthClientRepresentation $oauthClients = null,
-//        #[Since('25.0.0')]
-//        public ?ClientTemplateRepresentation $clientTemplates = null,
+        //        #[Since('25.0.0')]
+        //        public ?ApplicationRepresentation $application = null,
+        //        #[Since('25.0.0')]
+        //        public ?OAuthClientRepresentation $oauthClients = null,
+        //        #[Since('25.0.0')]
+        //        public ?ClientTemplateRepresentation $clientTemplates = null,
         #[Since('25.0.0')] public ?int $oAuth2DeviceCodeLifespan = null,
         #[Since('25.0.0')] public ?int $oAuth2DevicePollingInterval = null,
     ) {
