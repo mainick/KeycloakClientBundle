@@ -31,6 +31,10 @@ mainick_keycloak_client:
     encryption_key: '%env(IAM_ENCRYPTION_KEY)%'
     encryption_key_path: '%env(IAM_ENCRYPTION_KEY_PATH)%'
     version: '%env(IAM_VERSION)%'
+    # Optional: expected "iss" claim. When set it must match exactly; when missing, the issuer only has to
+    # contain the realm name. Set it when the application reaches Keycloak on a different URL (e.g. an
+    # internal Docker hostname) than the public one that issues the tokens.
+    issuer: '%env(IAM_ISSUER)%'
     # Optional: Whitelist of allowed domains for JWKS endpoint (security feature)
     # If not specified, only the domain from base_url is allowed
     allowed_jwks_domains:
@@ -53,6 +57,7 @@ IAM_ENCRYPTION_ALGORITHM='<your-algorithm>' # RS256, HS256, JWKS, etc.
 IAM_ENCRYPTION_KEY='<your-public-key>' # public key
 IAM_ENCRYPTION_KEY_PATH='<your-public-key-path>' # public key path
 IAM_VERSION='<your-version-keycloak>' # Keycloak version
+IAM_ISSUER='<your-public-keycloak-url>/realms/<your-realm>' # Optional: expected token issuer
 ###< mainick/keycloak-client-bundle ###
 ```
 

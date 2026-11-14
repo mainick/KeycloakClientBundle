@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use League\OAuth2\Client\Token\AccessToken as AccessTokenLib;
 use Mainick\KeycloakClientBundle\DTO\UserRepresentationDTO;
+use Mainick\KeycloakClientBundle\Exception\TokenDecoderException;
 use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
@@ -33,6 +34,7 @@ class KeycloakClient implements IamClientInterface
         private readonly string $encryption_key = '',
         private readonly string $encryption_key_path = '',
         private readonly string $version = '',
+        private readonly ?string $issuer = null,
     ) {
         $this->keycloakProvider = new Keycloak([
             'authServerUrl' => $this->base_url,
@@ -111,6 +113,9 @@ class KeycloakClient implements IamClientInterface
             );
             $tokenDecoded = $decoder->decode($accessToken->getToken(), $this->encryption_key);
             $decoder->validateToken($this->realm, $tokenDecoded);
+            if (null !== $this->issuer && '' !== $this->issuer && ($tokenDecoded['iss'] ?? null) !== $this->issuer) {
+                throw TokenDecoderException::forIssuerMismatch(new \Exception(sprintf('Expected issuer "%s"', $this->issuer)));
+            }
             $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [
                 'tokenDecoded' => $tokenDecoded,
             ]);
