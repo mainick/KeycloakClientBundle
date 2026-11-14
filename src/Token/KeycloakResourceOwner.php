@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Token;
 
+use Mainick\KeycloakClientBundle\DTO\OrganizationRepresentationDTO;
 use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\ResourceOwnerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -22,10 +23,16 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
     /**
      * Creates new resource owner.
      *
-     * @param array<string,mixed> $response The raw response from the token decoder
+     * @param array<string,mixed>    $response    The raw response from the token decoder
+     * @param array<string,string[]> $clientRoles extra roles granted, with {@see RolesSourceEnum::AUTHORIZED_PARTY},
+     *                                            according to the client that requested the token, keyed by client id
      */
-    public function __construct(array $response = [], ?AccessTokenInterface $accessToken = null)
-    {
+    public function __construct(
+        array $response = [],
+        ?AccessTokenInterface $accessToken = null,
+        protected RolesSourceEnum $rolesSource = RolesSourceEnum::ALL,
+        protected array $clientRoles = [],
+    ) {
         $this->response = $response;
         $this->accessToken = $accessToken;
     }
@@ -106,7 +113,9 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
         // If client_id is provided, return only roles for that client
         if (null !== $client_id) {
-            return $resource_access[$client_id]['roles'] ?? [];
+            $roles = $resource_access[$client_id]['roles'] ?? [];
+
+            return is_array($roles) ? $roles : [];
         }
 
         // Otherwise, collect all roles from all clients
@@ -114,7 +123,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
             $resource_access,
             static fn (array $carry, array $client): array => [
                 ...$carry,
-                ...$client['roles'] ?? [],
+                ...(is_array($client['roles'] ?? null) ? $client['roles'] : []),
             ],
             []
         );
@@ -123,11 +132,47 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
     /**
      * Get realm and resource owner roles.
      *
+     * With an explicit client id: realm roles plus that client's roles. Without it, it depends on the roles
+     * source: {@see RolesSourceEnum::ALL} returns realm roles plus every client's roles,
+     * {@see RolesSourceEnum::AUTHORIZED_PARTY} only the roles of the `azp` client plus its configured client roles.
+     *
      * @return array<string>
      */
     public function getRoles(?string $client_id = null): array
     {
-        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
+        if (null !== $client_id || RolesSourceEnum::ALL === $this->rolesSource) {
+            return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
+        }
+
+        $authorizedParty = $this->getAuthorizedParty();
+        if (null === $authorizedParty) {
+            return [];
+        }
+
+        return array_values(array_unique([
+            ...$this->getClientRoles($authorizedParty),
+            ...$this->clientRoles[$authorizedParty] ?? [],
+        ]));
+    }
+
+    /**
+     * Get the client that requested the token (`azp` claim).
+     */
+    public function getAuthorizedParty(): ?string
+    {
+        $azp = $this->response['azp'] ?? null;
+
+        return is_string($azp) && '' !== $azp ? $azp : null;
+    }
+
+    /**
+     * Get the organizations the resource owner belongs to (`organization` claim).
+     *
+     * @return OrganizationRepresentationDTO[]
+     */
+    public function getOrganizations(): array
+    {
+        return OrganizationRepresentationDTO::listFromClaim($this->response['organization'] ?? null) ?? [];
     }
 
     /**

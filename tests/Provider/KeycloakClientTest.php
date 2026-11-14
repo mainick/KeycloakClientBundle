@@ -8,6 +8,7 @@ use Firebase\JWT\JWT;
 use GuzzleHttp\ClientInterface;
 use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use Mainick\KeycloakClientBundle\Provider\KeycloakClient;
+use Mainick\KeycloakClientBundle\Token\AccessToken;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
@@ -163,6 +164,77 @@ EOF;
         $this->assertEquals('test-user', $user->username);
         $this->assertEquals('Test', $user->firstName);
         $this->assertEquals('User', $user->lastName);
+    }
+
+    private function clientWithIssuer(?string $issuer): KeycloakClient
+    {
+        return new KeycloakClient(
+            $this->createStub(LoggerInterface::class),
+            true,
+            'http://keycloak.internal:8080/auth',
+            'mock_realm',
+            'test-app',
+            'mock_secret',
+            'none',
+            self::ENCRYPTION_ALGORITHM,
+            self::ENCRYPTION_KEY,
+            issuer: $issuer,
+        );
+    }
+
+    private function bearerToken(): AccessToken
+    {
+        $token = new AccessToken();
+        $token->setToken($this->access_token);
+        $token->setRefreshToken('');
+        $token->setExpires(time() + 3600);
+        $token->setValues([]);
+
+        return $token;
+    }
+
+    public function testVerifyTokenAcceptsAnyIssuerContainingTheRealmWhenNoIssuerIsConfigured(): void
+    {
+        $user = $this->clientWithIssuer(null)->verifyToken($this->bearerToken());
+
+        $this->assertNotNull($user);
+        $this->assertSame('https://example.org/auth/realms/mock_realm', $user->issuer);
+    }
+
+    public function testVerifyTokenAcceptsTheConfiguredIssuer(): void
+    {
+        $user = $this->clientWithIssuer('https://example.org/auth/realms/mock_realm')->verifyToken($this->bearerToken());
+
+        $this->assertNotNull($user);
+        $this->assertSame('test-app', $user->authorizedParty);
+    }
+
+    public function testVerifyTokenRejectsAnIssuerDifferentFromTheConfiguredOne(): void
+    {
+        $user = $this->clientWithIssuer('https://sso.example.org/realms/mock_realm')->verifyToken($this->bearerToken());
+
+        $this->assertNull($user);
+    }
+
+    public function testVerifyTokenLogsTheDecodedClaimsAtDebugLevelOnly(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('info');
+        $logger->expects($this->exactly(2))->method('debug')->with('KeycloakClient::verifyToken', $this->anything());
+
+        $client = new KeycloakClient(
+            $logger,
+            true,
+            'http://keycloak.internal:8080/auth',
+            'mock_realm',
+            'test-app',
+            'mock_secret',
+            'none',
+            self::ENCRYPTION_ALGORITHM,
+            self::ENCRYPTION_KEY,
+        );
+
+        $this->assertNotNull($client->verifyToken($this->bearerToken()));
     }
 
     public function testUserInfo(): void
