@@ -191,6 +191,74 @@ $hasAnyScope = $this->iamClient->hasAnyScope($accessToken, $scopeNames);
 $hasAllScopes = $this->iamClient->hasAllScopes($accessToken, $scopeNames);
 ```
 
+### API authentication with a Bearer token
+
+For APIs, the bundle provides a stateless Symfony authenticator that reads the `Authorization: Bearer <token>`
+header and verifies the access token locally (signature, expiration and issuer) with `IamClientInterface::verifyToken()`,
+without calling Keycloak on each request. The authenticated user is a `KeycloakResourceOwner`, so you can use
+`#[CurrentUser]`, `#[IsGranted]` and the firewalls as usual.
+
+Enable it in the bundle configuration:
+
+```yaml
+# config/packages/mainick_keycloak_client.yaml
+mainick_keycloak_client:
+  keycloak:
+    # ...
+    issuer: '%env(IAM_ISSUER)%'   # recommended
+  bearer:
+    enabled: true
+    # "all" (default): realm roles plus the roles of every client, as KeycloakResourceOwner always did.
+    # "authorized_party": only the roles of the client that requested the token (azp claim).
+    roles_source: authorized_party
+    # Clients (azp) whose tokens are accepted; empty means any client of the realm.
+    allowed_clients: [ 'web-app', 'mobile-app' ]
+    # Extra roles granted according to the client that requested the token.
+    client_roles:
+      web-app: [ 'ROLE_WEB' ]
+      mobile-app: [ 'ROLE_MOBILE' ]
+```
+
+Then reference the authenticators in your firewalls:
+
+```yaml
+# config/packages/security.yaml
+security:
+  firewalls:
+    api_public:
+      pattern: ^/api/public
+      stateless: true
+      # an invalid token does not block the request: it continues as anonymous
+      custom_authenticators:
+        - Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakOptionalBearerAuthenticator
+    api:
+      pattern: ^/api
+      stateless: true
+      custom_authenticators:
+        - Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator
+```
+
+An invalid, expired or not allowed token gets a `401` response with a JSON body like `{"message": "Token not valid"}`.
+
+The user also exposes the client that requested the token and the Keycloak Organizations it belongs to:
+
+```php
+use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
+
+public function me(#[CurrentUser] KeycloakResourceOwner $user): JsonResponse
+{
+    $client = $user->getAuthorizedParty();     // e.g. "web-app"
+    $organizations = $user->getOrganizations(); // OrganizationRepresentationDTO[] with alias, id, attributes
+    // ...
+}
+```
+
+`UserRepresentationDTO`, returned by `verifyToken()` and `userInfo()`, carries the same data:
+`authorizedParty`, `authorizedPartyRoles`, `organizations`, `issuer`, `expiresAt` and the raw `claims`.
+The `organization` claim is read in every format Keycloak emits: the default list of aliases, a single alias,
+or the map with id and attributes ("Add organization id" / "Add organization attributes" in the mapper).
+
 ### Token Verification Listener
 
 The KeycloakClientBundle includes a built-in listener, `TokenAuthListener`, that automatically validates the

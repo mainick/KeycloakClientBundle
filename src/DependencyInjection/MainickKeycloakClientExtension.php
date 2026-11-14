@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\DependencyInjection;
 
+use Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator;
+use Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakOptionalBearerAuthenticator;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -27,6 +29,13 @@ class MainickKeycloakClientExtension extends Extension
         }
         foreach ($config['security'] as $key => $value) {
             $container->setParameter('mainick_keycloak_client.security.'.$key, $value);
+        }
+        foreach ($config['bearer'] as $key => $value) {
+            $container->setParameter('mainick_keycloak_client.bearer.'.$key, $value);
+        }
+        if (!$config['bearer']['enabled']) {
+            $container->removeDefinition(KeycloakBearerAuthenticator::class);
+            $container->removeDefinition(KeycloakOptionalBearerAuthenticator::class);
         }
         foreach ($config['admin_cli'] as $key => $value) {
             if ('enabled' === $key) {

@@ -44,6 +44,18 @@ services:
             $defaultTargetRouteName: '%mainick_keycloak_client.security.default_target_route_name%'
         tags: [ 'controller.service_arguments' ]
 
+    Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator:
+        arguments:
+            $rolesSource: '%mainick_keycloak_client.bearer.roles_source%'
+            $allowedClients: '%mainick_keycloak_client.bearer.allowed_clients%'
+            $clientRoles: '%mainick_keycloak_client.bearer.client_roles%'
+
+    Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakOptionalBearerAuthenticator:
+        arguments:
+            $rolesSource: '%mainick_keycloak_client.bearer.roles_source%'
+            $allowedClients: '%mainick_keycloak_client.bearer.allowed_clients%'
+            $clientRoles: '%mainick_keycloak_client.bearer.client_roles%'
+
     Mainick\KeycloakClientBundle\Security\User\KeycloakUserProvider:
         public: true
 #        tags:

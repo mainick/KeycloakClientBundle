@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mainick\KeycloakClientBundle\Token;
 
+use Mainick\KeycloakClientBundle\DTO\OrganizationRepresentationDTO;
 use Mainick\KeycloakClientBundle\Interface\AccessTokenInterface;
 use Mainick\KeycloakClientBundle\Interface\ResourceOwnerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -19,13 +20,23 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
     protected ?AccessTokenInterface $accessToken = null;
 
+    public const ROLES_SOURCE_ALL = 'all';
+    public const ROLES_SOURCE_AUTHORIZED_PARTY = 'authorized_party';
+
     /**
      * Creates new resource owner.
      *
-     * @param array<string,mixed> $response The raw response from the token decoder
+     * @param array<string,mixed>    $response    The raw response from the token decoder
+     * @param string                 $rolesSource `all`: realm roles and the roles of every client (default);
+     *                                            `authorized_party`: only the roles of the client that requested the token (`azp`)
+     * @param array<string,string[]> $clientRoles extra roles granted according to the client that requested the token, keyed by client id
      */
-    public function __construct(array $response = [], ?AccessTokenInterface $accessToken = null)
-    {
+    public function __construct(
+        array $response = [],
+        ?AccessTokenInterface $accessToken = null,
+        protected string $rolesSource = self::ROLES_SOURCE_ALL,
+        protected array $clientRoles = [],
+    ) {
         $this->response = $response;
         $this->accessToken = $accessToken;
     }
@@ -127,7 +138,36 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
      */
     public function getRoles(?string $client_id = null): array
     {
-        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
+        $authorizedParty = $this->getAuthorizedParty();
+        $extraRoles = null !== $authorizedParty ? $this->clientRoles[$authorizedParty] ?? [] : [];
+
+        if (null === $client_id && self::ROLES_SOURCE_AUTHORIZED_PARTY === $this->rolesSource) {
+            $tokenClientRoles = null !== $authorizedParty ? $this->getClientRoles($authorizedParty) : [];
+
+            return array_values(array_unique([...$tokenClientRoles, ...$extraRoles]));
+        }
+
+        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id), ...$extraRoles];
+    }
+
+    /**
+     * Get the client that requested the token (`azp` claim).
+     */
+    public function getAuthorizedParty(): ?string
+    {
+        $azp = $this->response['azp'] ?? null;
+
+        return is_string($azp) && '' !== $azp ? $azp : null;
+    }
+
+    /**
+     * Get the organizations the resource owner belongs to (`organization` claim).
+     *
+     * @return OrganizationRepresentationDTO[]
+     */
+    public function getOrganizations(): array
+    {
+        return OrganizationRepresentationDTO::listFromClaim($this->response['organization'] ?? null) ?? [];
     }
 
     /**
