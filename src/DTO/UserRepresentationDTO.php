@@ -7,12 +7,15 @@ namespace Mainick\KeycloakClientBundle\DTO;
 final readonly class UserRepresentationDTO
 {
     /**
-     * @param array<string>                 $attributes
-     * @param RoleRepresentationDTO[]|null  $realmRoles
-     * @param RoleRepresentationDTO[]|null  $clientRoles
-     * @param RoleRepresentationDTO[]|null  $applicationRoles
-     * @param GroupRepresentationDTO[]|null $groups
-     * @param ScopeRepresentationDTO[]|null $scope
+     * @param array<string>                        $attributes
+     * @param RoleRepresentationDTO[]|null         $realmRoles
+     * @param RoleRepresentationDTO[]|null         $clientRoles
+     * @param RoleRepresentationDTO[]|null         $applicationRoles
+     * @param GroupRepresentationDTO[]|null        $groups
+     * @param ScopeRepresentationDTO[]|null        $scope
+     * @param RoleRepresentationDTO[]|null         $authorizedPartyRoles roles of the client that requested the token (`resource_access[azp]`)
+     * @param OrganizationRepresentationDTO[]|null $organizations
+     * @param array<string,mixed>|null             $claims               the raw claims the DTO was built from
      */
     public function __construct(
         public string $id,
@@ -32,6 +35,12 @@ final readonly class UserRepresentationDTO
         public ?array $groups,
         public ?array $scope,
         public ?string $picture = null,
+        public ?string $authorizedParty = null,
+        public ?array $authorizedPartyRoles = null,
+        public ?array $organizations = null,
+        public ?string $issuer = null,
+        public ?int $expiresAt = null,
+        public ?array $claims = null,
     ) {
     }
 
@@ -68,6 +77,15 @@ final readonly class UserRepresentationDTO
             }
         }
 
+        $authorized_party = isset($data['azp']) && is_string($data['azp']) ? $data['azp'] : null;
+        $authorized_party_roles = [];
+        if ($authorized_party && isset($data['resource_access'][$authorized_party]['roles'])) {
+            foreach ($data['resource_access'][$authorized_party]['roles'] as $role_name) {
+                $dummy = ['name' => $role_name];
+                $authorized_party_roles[] = RoleRepresentationDTO::fromArray($dummy);
+            }
+        }
+
         $groups = [];
         foreach ($data['groups'] ?? [] as $group_name) {
             $dummy = ['name' => $group_name];
@@ -100,6 +118,12 @@ final readonly class UserRepresentationDTO
             groups: count($groups) ? $groups : null,
             scope: count($scope) ? $scope : null,
             picture: $data['picture'] ?? $data['attributes']['picture'] ?? null,
+            authorizedParty: $authorized_party,
+            authorizedPartyRoles: count($authorized_party_roles) ? $authorized_party_roles : null,
+            organizations: OrganizationRepresentationDTO::listFromClaim($data['organization'] ?? null),
+            issuer: isset($data['iss']) && is_string($data['iss']) ? $data['iss'] : null,
+            expiresAt: isset($data['exp']) && is_numeric($data['exp']) ? (int) $data['exp'] : null,
+            claims: $data,
         );
     }
 }
