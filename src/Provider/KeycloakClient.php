@@ -116,12 +116,12 @@ class KeycloakClient implements IamClientInterface
             if (null !== $this->issuer && '' !== $this->issuer && ($tokenDecoded['iss'] ?? null) !== $this->issuer) {
                 throw TokenDecoderException::forIssuerMismatch(new \Exception(sprintf('Expected issuer "%s"', $this->issuer)));
             }
-            $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [
+            $this->keycloakClientLogger->debug('KeycloakClient::verifyToken', [
                 'tokenDecoded' => $tokenDecoded,
             ]);
 
             $user = new KeycloakResourceOwner($tokenDecoded, $token);
-            $this->keycloakClientLogger->info('KeycloakClient::verifyToken', [
+            $this->keycloakClientLogger->debug('KeycloakClient::verifyToken', [
                 'user' => $user->toArray(),
             ]);
 

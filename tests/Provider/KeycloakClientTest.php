@@ -216,6 +216,27 @@ EOF;
         $this->assertNull($user);
     }
 
+    public function testVerifyTokenLogsTheDecodedClaimsAtDebugLevelOnly(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('info');
+        $logger->expects($this->exactly(2))->method('debug')->with('KeycloakClient::verifyToken', $this->anything());
+
+        $client = new KeycloakClient(
+            $logger,
+            true,
+            'http://keycloak.internal:8080/auth',
+            'mock_realm',
+            'test-app',
+            'mock_secret',
+            'none',
+            self::ENCRYPTION_ALGORITHM,
+            self::ENCRYPTION_KEY,
+        );
+
+        $this->assertNotNull($client->verifyToken($this->bearerToken()));
+    }
+
     public function testUserInfo(): void
     {
         // given
