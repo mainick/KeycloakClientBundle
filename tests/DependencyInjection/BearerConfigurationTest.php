@@ -87,5 +87,10 @@ class BearerConfigurationTest extends TestCase
         $this->assertTrue($enabled->hasDefinition(KeycloakBearerAuthenticator::class));
         $this->assertTrue($enabled->hasDefinition(KeycloakOptionalBearerAuthenticator::class));
         $this->assertSame('all', $enabled->getParameter('mainick_keycloak_client.bearer.roles_source'));
+        $this->assertSame(
+            $enabled->getDefinition(KeycloakBearerAuthenticator::class)->getArguments(),
+            $enabled->getDefinition(KeycloakOptionalBearerAuthenticator::class)->getArguments(),
+        );
+        $this->assertSame('%mainick_keycloak_client.bearer.client_roles%', $enabled->getDefinition(KeycloakOptionalBearerAuthenticator::class)->getArgument('$clientRoles'));
     }
 }

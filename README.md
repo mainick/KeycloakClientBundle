@@ -213,7 +213,7 @@ mainick_keycloak_client:
     roles_source: authorized_party
     # Clients (azp) whose tokens are accepted; empty means any client of the realm.
     allowed_clients: [ 'web-app', 'mobile-app' ]
-    # Extra roles granted according to the client that requested the token.
+    # Extra roles granted according to the client that requested the token (only with "authorized_party").
     client_roles:
       web-app: [ 'ROLE_WEB' ]
       mobile-app: [ 'ROLE_MOBILE' ]
@@ -239,6 +239,10 @@ security:
 ```
 
 An invalid, expired or not allowed token gets a `401` response with a JSON body like `{"message": "Token not valid"}`.
+
+`verifyToken()` logs the decoded token at `debug` level (it was `info` before 4.2): with the authenticator it runs
+on every API request, so raise your log level to `debug` if you need those entries. The DTO it returns also carries
+the raw `claims`: avoid serializing it into responses or logs as a whole.
 
 The user also exposes the client that requested the token and the Keycloak Organizations it belongs to:
 

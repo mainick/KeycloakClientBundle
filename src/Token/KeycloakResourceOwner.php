@@ -20,21 +20,17 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
     protected ?AccessTokenInterface $accessToken = null;
 
-    public const ROLES_SOURCE_ALL = 'all';
-    public const ROLES_SOURCE_AUTHORIZED_PARTY = 'authorized_party';
-
     /**
      * Creates new resource owner.
      *
      * @param array<string,mixed>    $response    The raw response from the token decoder
-     * @param string                 $rolesSource `all`: realm roles and the roles of every client (default);
-     *                                            `authorized_party`: only the roles of the client that requested the token (`azp`)
-     * @param array<string,string[]> $clientRoles extra roles granted according to the client that requested the token, keyed by client id
+     * @param array<string,string[]> $clientRoles extra roles granted, with {@see RolesSourceEnum::AUTHORIZED_PARTY},
+     *                                            according to the client that requested the token, keyed by client id
      */
     public function __construct(
         array $response = [],
         ?AccessTokenInterface $accessToken = null,
-        protected string $rolesSource = self::ROLES_SOURCE_ALL,
+        protected RolesSourceEnum $rolesSource = RolesSourceEnum::ALL,
         protected array $clientRoles = [],
     ) {
         $this->response = $response;
@@ -117,7 +113,9 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
 
         // If client_id is provided, return only roles for that client
         if (null !== $client_id) {
-            return $resource_access[$client_id]['roles'] ?? [];
+            $roles = $resource_access[$client_id]['roles'] ?? [];
+
+            return is_array($roles) ? $roles : [];
         }
 
         // Otherwise, collect all roles from all clients
@@ -125,7 +123,7 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
             $resource_access,
             static fn (array $carry, array $client): array => [
                 ...$carry,
-                ...$client['roles'] ?? [],
+                ...(is_array($client['roles'] ?? null) ? $client['roles'] : []),
             ],
             []
         );
@@ -134,20 +132,27 @@ class KeycloakResourceOwner implements ResourceOwnerInterface, UserInterface
     /**
      * Get realm and resource owner roles.
      *
+     * With an explicit client id: realm roles plus that client's roles. Without it, it depends on the roles
+     * source: {@see RolesSourceEnum::ALL} returns realm roles plus every client's roles,
+     * {@see RolesSourceEnum::AUTHORIZED_PARTY} only the roles of the `azp` client plus its configured client roles.
+     *
      * @return array<string>
      */
     public function getRoles(?string $client_id = null): array
     {
-        $authorizedParty = $this->getAuthorizedParty();
-        $extraRoles = null !== $authorizedParty ? $this->clientRoles[$authorizedParty] ?? [] : [];
-
-        if (null === $client_id && self::ROLES_SOURCE_AUTHORIZED_PARTY === $this->rolesSource) {
-            $tokenClientRoles = null !== $authorizedParty ? $this->getClientRoles($authorizedParty) : [];
-
-            return array_values(array_unique([...$tokenClientRoles, ...$extraRoles]));
+        if (null !== $client_id || RolesSourceEnum::ALL === $this->rolesSource) {
+            return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id)];
         }
 
-        return [...$this->getRealmRoles(), ...$this->getClientRoles($client_id), ...$extraRoles];
+        $authorizedParty = $this->getAuthorizedParty();
+        if (null === $authorizedParty) {
+            return [];
+        }
+
+        return array_values(array_unique([
+            ...$this->getClientRoles($authorizedParty),
+            ...$this->clientRoles[$authorizedParty] ?? [],
+        ]));
     }
 
     /**

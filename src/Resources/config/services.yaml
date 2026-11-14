@@ -26,6 +26,7 @@ services:
             string $encryption_key: '%mainick_keycloak_client.keycloak.encryption_key%'
             string $encryption_key_path: '%mainick_keycloak_client.keycloak.encryption_key_path%'
             string $version: '%mainick_keycloak_client.keycloak.version%'
+            # nullable: no type prefix, a "?string" binding would not match
             $issuer: '%mainick_keycloak_client.keycloak.issuer%'
 
     Mainick\KeycloakClientBundle\Provider\KeycloakAdminClient:

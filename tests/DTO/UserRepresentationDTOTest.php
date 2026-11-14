@@ -80,6 +80,24 @@ class UserRepresentationDTOTest extends TestCase
         $this->assertNull($dto->authorizedPartyRoles);
     }
 
+    public function testMalformedAuthorizedPartyRolesAreIgnored(): void
+    {
+        $dto = UserRepresentationDTO::fromArray($this->claims([
+            'azp' => 'business-app',
+            'resource_access' => ['business-app' => ['roles' => 'ROLE_AGENCY_BOOKINGS']],
+        ]));
+
+        $this->assertSame('business-app', $dto->authorizedParty);
+        $this->assertNull($dto->authorizedPartyRoles);
+    }
+
+    public function testEmptyAzpIsNotAnAuthorizedParty(): void
+    {
+        $dto = UserRepresentationDTO::fromArray($this->claims(['azp' => '']));
+
+        $this->assertNull($dto->authorizedParty);
+    }
+
     public function testOrganizationsFromTheDefaultAliasList(): void
     {
         $dto = UserRepresentationDTO::fromArray($this->claims([

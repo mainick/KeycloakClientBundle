@@ -7,6 +7,7 @@ namespace Mainick\KeycloakClientBundle\Security\Authenticator;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Mainick\KeycloakClientBundle\Token\KeycloakResourceOwner;
+use Mainick\KeycloakClientBundle\Token\RolesSourceEnum;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,18 +29,21 @@ class KeycloakBearerAuthenticator extends AbstractAuthenticator
 {
     private const PREFIX = 'Bearer ';
 
+    private readonly RolesSourceEnum $rolesSource;
+
     /**
-     * @param string                 $rolesSource    see {@see KeycloakResourceOwner::ROLES_SOURCE_ALL} and {@see KeycloakResourceOwner::ROLES_SOURCE_AUTHORIZED_PARTY}
+     * @param string                 $rolesSource    a {@see RolesSourceEnum} value: `all` or `authorized_party`
      * @param string[]               $allowedClients clients (`azp`) accepted; empty means any client of the realm
-     * @param array<string,string[]> $clientRoles    extra roles granted according to the client that requested the token
+     * @param array<string,string[]> $clientRoles    extra roles granted, with `authorized_party`, according to the client that requested the token
      */
     public function __construct(
         private readonly LoggerInterface $keycloakClientLogger,
         private readonly IamClientInterface $iamClient,
-        private readonly string $rolesSource = KeycloakResourceOwner::ROLES_SOURCE_ALL,
+        RolesSourceEnum|string $rolesSource = RolesSourceEnum::ALL,
         private readonly array $allowedClients = [],
         private readonly array $clientRoles = [],
     ) {
+        $this->rolesSource = $rolesSource instanceof RolesSourceEnum ? $rolesSource : RolesSourceEnum::from($rolesSource);
     }
 
     public function supports(Request $request): ?bool

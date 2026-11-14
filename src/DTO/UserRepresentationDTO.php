@@ -60,7 +60,7 @@ final readonly class UserRepresentationDTO
         $client_roles = [];
         if (isset($data['resource_access'])) {
             foreach ($data['resource_access'] as $client_rif) {
-                if (isset($client_rif['roles'])) {
+                if (is_array($client_rif['roles'] ?? null)) {
                     foreach ($client_rif['roles'] as $role_name) {
                         $dummy = ['name' => $role_name];
                         $client_roles[] = RoleRepresentationDTO::fromArray($dummy);
@@ -77,9 +77,9 @@ final readonly class UserRepresentationDTO
             }
         }
 
-        $authorized_party = isset($data['azp']) && is_string($data['azp']) ? $data['azp'] : null;
+        $authorized_party = isset($data['azp']) && is_string($data['azp']) && '' !== $data['azp'] ? $data['azp'] : null;
         $authorized_party_roles = [];
-        if ($authorized_party && isset($data['resource_access'][$authorized_party]['roles'])) {
+        if (null !== $authorized_party && is_array($data['resource_access'][$authorized_party]['roles'] ?? null)) {
             foreach ($data['resource_access'][$authorized_party]['roles'] as $role_name) {
                 $dummy = ['name' => $role_name];
                 $authorized_party_roles[] = RoleRepresentationDTO::fromArray($dummy);

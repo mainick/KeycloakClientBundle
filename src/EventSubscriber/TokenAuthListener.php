@@ -6,6 +6,7 @@ namespace Mainick\KeycloakClientBundle\EventSubscriber;
 
 use Mainick\KeycloakClientBundle\Annotation\ExcludeTokenValidationAttribute;
 use Mainick\KeycloakClientBundle\Interface\IamClientInterface;
+use Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator;
 use Mainick\KeycloakClientBundle\Token\AccessToken;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -17,7 +18,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * @deprecated since mainick/keycloak-client-bundle 4.2, use the stateless
- *             {@see \Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator} instead (option `bearer`).
+ *             {@see KeycloakBearerAuthenticator} instead (option `bearer`).
  *             It will be removed in 5.0.
  */
 final readonly class TokenAuthListener implements EventSubscriberInterface
@@ -37,7 +38,7 @@ final readonly class TokenAuthListener implements EventSubscriberInterface
         private LoggerInterface $keycloakClientLogger,
         private IamClientInterface $iamClient,
     ) {
-        trigger_deprecation('mainick/keycloak-client-bundle', '4.2', 'The "%s" class is deprecated, use the "bearer" authenticator (%s) instead.', self::class, \Mainick\KeycloakClientBundle\Security\Authenticator\KeycloakBearerAuthenticator::class);
+        trigger_deprecation('mainick/keycloak-client-bundle', '4.2', 'The "%s" class is deprecated, use the "bearer" authenticator (%s) instead.', self::class, KeycloakBearerAuthenticator::class);
     }
 
     public static function getSubscribedEvents(): array
