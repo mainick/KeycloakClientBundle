@@ -261,6 +261,9 @@ or the map with id and attributes ("Add organization id" / "Add organization att
 
 ### Token Verification Listener
 
+> **Deprecated since 4.2**, it will be removed in 5.0: use the Bearer authenticator described above.
+> `TokenAuthListener` calls the userinfo endpoint on each request and works outside the Symfony security system.
+
 The KeycloakClientBundle includes a built-in listener, `TokenAuthListener`, that automatically validates the
 JWT token on every request, ensuring the security and validity of your Keycloak integration.
 This listener seamlessly handles token validation, allowing you to focus on your application's logic.
